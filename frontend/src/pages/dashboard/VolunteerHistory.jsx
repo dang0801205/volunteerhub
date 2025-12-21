@@ -142,23 +142,12 @@ export default function VolunteerHistory({ user }) {
       (r) => r.completionStatus === "completed"
     ).length;
 
-    const totalHours = registrations
-      .filter((r) => r.completionStatus === "completed" && r.event)
-      .reduce((sum, r) => {
-        if (!r.event?.startDate || !r.event?.endDate) return sum;
-        const start = new Date(r.event.startDate);
-        const end = new Date(r.event.endDate);
-        const hours = Math.max(0, (end - start) / (1000 * 60 * 60));
-        return sum + hours;
-      }, 0);
-
     return {
       total,
       pending,
       accepted,
       rejected,
       completed,
-      totalHours: Math.round(totalHours),
     };
   }, [registrations]);
 
@@ -248,12 +237,6 @@ export default function VolunteerHistory({ user }) {
             value={stats.completed}
             icon={<Award className='h-5 w-5' />}
             color='bg-purple-500'
-          />
-          <StatCard
-            label='Số giờ TNV'
-            value={`${stats.totalHours}h`}
-            icon={<TrendingUp className='h-5 w-5' />}
-            color='bg-indigo-500'
           />
         </div>
 

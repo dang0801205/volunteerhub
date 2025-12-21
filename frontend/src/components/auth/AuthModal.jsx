@@ -103,7 +103,7 @@ export default function AuthModal({ mode, onClose, onSuccess }) {
         formData.append("userName", name);
         formData.append("biography", biography);
         formData.append("picture", registeredPicture); // File object
-        formData.append("role", "volunteer"); // Mặc định là volunteer
+        formData.append("role", role); // Mặc định là volunteer
         
         // Nếu chọn admin hoặc manager, thêm flag adminRequest
         if (role === 'admin' || role === 'manager') {

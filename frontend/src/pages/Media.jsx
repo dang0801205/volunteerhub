@@ -154,7 +154,7 @@ const EventDetailView = ({ event, user, onBack }) => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-12 relative z-30 pb-20">
+      <div className="max-w mx-auto px-4 md:px-8 -mt-12 relative z-30 pb-20">
         <div className="mb-6 shadow-2xl">
           <MyRegistrationStatus eventId={event._id} userId={user._id} />
         </div>
@@ -163,7 +163,7 @@ const EventDetailView = ({ event, user, onBack }) => {
           <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 
-        <div className="mt-8">
+        <div className="">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -206,10 +206,10 @@ const EventDetailView = ({ event, user, onBack }) => {
               )}
 
               {activeTab === "attendance" && (
-                <div className="bg-white rounded-[3rem] p-8 md:p-12">
-                  <AttendanceManagement attendances={currentChannel?.attendances || []} />
-                </div>
-              )}
+  <div className="bg-white rounded-[3rem] md:p-12">
+    <AttendanceManagement attendances={currentChannel?.attendances || []} />
+  </div>
+)}
 
 
               {activeTab === "about" && (
@@ -242,7 +242,7 @@ const EventDetailView = ({ event, user, onBack }) => {
 
                   {user.role === "manager" && (
                     <div className="space-y-6">
-                      <ManagerQrScanner eventId={event._id || event.id} onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+                      <ManagerQrScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
                       
                       {/* HIỂN THỊ TRẠNG THÁI & LỖI (Sửa lỗi scanError unused) */}
                       <div className="mt-6 space-y-4">

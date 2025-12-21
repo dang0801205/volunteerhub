@@ -51,7 +51,7 @@ const TABS_CONFIG = [
 
 const EventTabs = ({ activeTab, setActiveTab, badgeCounts = {} }) => {
   return (
-    <div className='bg-gray-50 border-b border-gray-200 sticky top-0 z-20'>
+    <div className='bg-gray-50 border-b border-gray-200'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <nav className='flex items-center gap-1 py-2 overflow-x-auto no-scrollbar'>
           {TABS_CONFIG.map((tab) => {

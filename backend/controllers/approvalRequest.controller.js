@@ -4,7 +4,8 @@ import asyncHandler from "express-async-handler";
 import ApprovalRequest from "../models/approvalRequestModel.js";
 import Event from "../models/eventModel.js";
 import User from "../models/userModel.js";
-import Registration from "../models/registrationModel.js"; // 👈 THÊM: Cần để hủy vé
+import Registration from "../models/registrationModel.js"; 
+import Channel from "../models/channelModel.js";
 
 // @desc    Admin: Lấy danh sách yêu cầu đang chờ duyệt
 const getPendingRequests = asyncHandler(async (req, res) => {
@@ -25,6 +26,9 @@ const approveRequest = asyncHandler(async (req, res) => {
   const { adminNote } = req.body;
   const request = await ApprovalRequest.findById(req.params.id);
 
+  console.log("Admin Note:", adminNote);  
+  console.log("Approval Request to approve:", request);
+
   if (!request || request.status !== "pending") {
     res.status(400);
     throw new Error("Yêu cầu không tồn tại hoặc đã xử lý");
@@ -33,12 +37,38 @@ const approveRequest = asyncHandler(async (req, res) => {
   // --- LOGIC XỬ LÝ ĐA HÌNH (POLYMORPHIC) ---
 
   if (request.type === "event_approval") {
-    // 1. DUYỆT ĐĂNG SỰ KIỆN MỚI
+    // 1️⃣ DUYỆT ĐĂNG SỰ KIỆN MỚI
     if (!request.event) {
       res.status(400);
       throw new Error("Không tìm thấy Event ID trong yêu cầu.");
     }
-    await Event.findByIdAndUpdate(request.event, { status: "approved" });
+
+    // Cập nhật trạng thái event
+    const event = await Event.findByIdAndUpdate(
+      request.event,
+      { status: "approved" },
+      { new: true }
+    );
+
+    if (!event) {
+      res.status(404);
+      throw new Error("Event không tồn tại.");
+    }
+
+    // 2️⃣ TẠO CHANNEL NẾU CHƯA CÓ
+    let channel = await Channel.findOne({ event: event._id });
+
+    if (!channel) {
+      channel = await Channel.create({
+        event: event._id,
+        posts: [],
+      });
+
+      // Gắn channel vào event (nếu có field channel)
+      event.channel = channel._id;
+      await event.save();
+    }
+
   } else if (request.type === "manager_promotion") {
     // 2. DUYỆT THĂNG CẤP MANAGER
     await User.findByIdAndUpdate(request.requestedBy, { role: "manager" });

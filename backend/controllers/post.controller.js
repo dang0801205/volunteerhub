@@ -62,18 +62,13 @@ export const createPost = asyncHandler(async (req, res) => {
   ...event.volunteers.map(id => id.toString()),
 ];
 
-console.log("🧩 [PUSH] Raw memberIds:", memberIds);
 
 const uniqueMemberIds = [...new Set(memberIds)];
-console.log("🧩 [PUSH] Unique memberIds:", uniqueMemberIds);
 
-console.log("🧩 [PUSH] Author userId:", userId);
 
 // loại bỏ người đăng
 // const notifyUserIds = uniqueMemberIds.filter(id => id !== userId);
 const notifyUserIds = uniqueMemberIds;
-
-console.log("🧩 [PUSH] notifyUserIds (after exclude author):", notifyUserIds);
 
 if (notifyUserIds.length === 0) {
   console.warn("⚠️ [PUSH] No users to notify. Skip push.");
@@ -95,11 +90,9 @@ pushToUsers({
   },
 })
   .then(result => {
-    console.log("✅ [PUSH] Push finished");
     console.log("📊 [PUSH] Result summary:", result);
   })
   .catch(err => {
-    console.error("❌ [PUSH] Push failed");
     console.error(err);
   });
 

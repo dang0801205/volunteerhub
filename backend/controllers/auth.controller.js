@@ -14,6 +14,7 @@ import admin from "firebase-admin";
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.development.local" });
+import ApprovalRequest from "../models/approvalRequestModel.js";
 
 let redis;
 if (process.env.REDIS_URL) {
@@ -129,8 +130,34 @@ const register = asyncHandler(async (req, res) => {
     phoneNumber,
     biology,
     profilePicture: req.file ? req.file.path : null,
-    role: role,
+    role: "volunteer",
   });
+
+  if (user) {
+    let approvalType = null;
+
+    if (role === "manager") {
+      approvalType = "manager_promotion";
+    }
+
+    if (role === "admin") {
+      approvalType = "admin_promotion";
+    }
+
+    if (approvalType) {
+      await ApprovalRequest.create({
+        type: approvalType,
+        requestedBy: user._id,
+        status: "pending",
+        promotionData: {
+          eventsCompleted: 0,
+          averageRating: 0,
+          totalAttendanceHours: 0,
+        },
+      });
+    }
+  }
+
 
   if (user) {
     const payload = {

@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import Registration from "../models/registrationModel.js";
 import Event from "../models/eventModel.js";
 import Attendance from "../models/attendanceModel.js";
+import { pushToUsers } from "../utils/pushHelper.js";
 
 
 // Import Enum từ file constants (Đảm bảo đường dẫn đúng với cấu trúc dự án của bạn)
@@ -114,9 +115,34 @@ const getMyRegistrations = asyncHandler(async (req, res) => {
     .populate("eventId")
     .sort({ createdAt: -1 }); // Mới nhất lên đầu
 
+    // 1️⃣ Lấy danh sách registration ids
+    const regIds = registrations.map((r) => r._id);
+
+    // 2️⃣ Tìm attendance tương ứng
+    const attendances = await Attendance.find({
+      regId: { $in: regIds },
+    });
+
+    // 3️⃣ Tạo map regId -> attendance
+    const attendanceMap = {};
+    attendances.forEach((att) => {
+      attendanceMap[att.regId.toString()] = att;
+    });
+
+    // 4️⃣ Gắn thêm field mới (KHÔNG xoá field cũ)
+    const result = registrations.map((reg) => {
+      const att = attendanceMap[reg._id.toString()];
+
+      return {
+        ...reg.toObject(), 
+        attendanceStatus: att?.status || null, // 👈 field mới
+      };
+    });
+
+
   res.status(200).json({
     success: true,
-    data: registrations,
+    data: result,
   });
 });
 
@@ -303,14 +329,25 @@ const acceptRegistration = asyncHandler(async (req, res) => {
     await event.save();
 
 
-    // 2. Tăng số lượng người tham gia trong Event (ĐÂY LÀ CHỖ DUY NHẤT TĂNG)
+    // 3. Tăng số lượng người tham gia trong Event (ĐÂY LÀ CHỖ DUY NHẤT TĂNG)
     event.currentParticipants += 1;
     await event.save();
 
-    // 3️. TẠO ATTENDANCE
+    // 4. TẠO ATTENDANCE
     await Attendance.create({
       regId: registration._id,
       status: "in-progress", // đợi checkout
+    });
+
+    // 5️. WEB PUSH: thông báo user đã được duyệt
+    await pushToUsers({
+      userIds: [registration.userId],
+      title: "🎉 Đăng ký được duyệt",
+      body: `Bạn đã được chấp nhận tham gia sự kiện "${event.title}". Hẹn gặp bạn nhé!`,
+      data: {
+        type: "EVENT_APPROVED",
+        eventId: event._id,
+      },
     });
   }
 

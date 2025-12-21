@@ -2,70 +2,86 @@
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import colors from "colors";
-
-// 👇 IMPORT MODELS (Lùi ra 1 cấp thư mục cha "..")
-import User from "../models/userModel.js";
 import Event from "../models/eventModel.js";
 import ApprovalRequest from "../models/approvalRequestModel.js";
-
-// 👇 IMPORT DATA HELPER (Lùi ra 1 cấp để vào thư mục "data")
-import generateApprovalRequests from "../database/approvalRequests.js";
-
-// 👇 IMPORT KẾT NỐI DB (Giống seederUser.js)
+import User from "../models/userModel.js";
 import connectDB from "../config/mongodb.js";
 
-// Load biến môi trường
 dotenv.config();
-
-// Kết nối Database
 connectDB();
 
+/* ======================
+   SEED APPROVAL REQUEST
+====================== */
 const seedApprovalRequests = async () => {
   try {
-    console.log("Đang xử lý dữ liệu Approval Requests...".yellow);
+    console.log("🚀 Seeding approval requests...");
 
-    // 1. Dọn dẹp dữ liệu cũ
-    await ApprovalRequest.deleteMany();
-    console.log("Đã xóa Approval Requests cũ...".red);
+    // 1️⃣ Lấy tất cả event cần duyệt
+    const events = await Event.find({
+      status: { $in: ["pending", "cancel_pending"] },
+    }).populate("managers");
 
-    // 2. Lấy dữ liệu thực tế từ DB để liên kết
-    // - Lấy các sự kiện đang chờ duyệt
-    const pendingEvents = await Event.find({ status: "pending" });
+    let createdCount = 0;
 
-    // - Lấy danh sách Volunteer active
-    const volunteers = await User.find({ role: "volunteer", status: "active" });
+    for (const event of events) {
+      // 2️⃣ Kiểm tra đã có approvalRequest chưa
+      const existed = await ApprovalRequest.findOne({
+        event: event._id,
+        status: "pending",
+      });
 
-    // - Lấy danh sách Manager
-    const managers = await User.find({ role: "manager" });
+      if (existed) {
+        console.log(`⚠️ ApprovalRequest already exists for event: ${event.title}`);
+        continue;
+      }
 
-    // Kiểm tra dữ liệu đầu vào
-    if (volunteers.length === 0) {
-      console.log(
-        "Cảnh báo: Không tìm thấy Volunteer nào để tạo yêu cầu.".yellow
+      // 3️⃣ Lọc managers hợp lệ
+      const validManagers = event.managers.filter(
+        (m) => m && m.role === "manager"
       );
-      process.exit();
+
+      if (validManagers.length === 0) {
+        console.log(`❌ Event "${event.title}" has no valid manager`);
+        continue;
+      }
+
+      // 4️⃣ Chọn ngẫu nhiên 1 manager
+      const requestedBy =
+        validManagers[Math.floor(Math.random() * validManagers.length)]._id;
+
+      // 5️⃣ Xác định loại request
+      let type = "event_approval";
+      let reason = undefined;
+
+      if (event.status === "cancel_pending") {
+        type = "event_cancellation";
+        reason = event.cancellationReason || "Yêu cầu hủy sự kiện";
+      }
+
+      // 6️⃣ Tạo ApprovalRequest
+      await ApprovalRequest.create({
+        type,
+        event: event._id,
+        requestedBy,
+        status: "pending",
+        reason,
+      });
+
+      createdCount++;
+      console.log(`✅ Created ${type} for event: ${event.title}`);
     }
 
-    // 3. Sinh dữ liệu từ hàm helper
-    const requestsToInsert = generateApprovalRequests(
-      volunteers,
-      pendingEvents,
-      managers
-    );
-
-    // 4. Insert vào Database
-    await ApprovalRequest.insertMany(requestsToInsert);
-
-    console.log("Data Imported Successfully!".green.inverse);
-    console.log(`- Đã tạo: ${requestsToInsert.length} yêu cầu duyệt.`);
-
-    process.exit();
+    console.log(`🎉 Done! Created ${createdCount} approval requests`);
+    process.exit(0);
   } catch (error) {
-    console.error(`Lỗi: ${error.message}`.red.inverse);
+    console.error("❌ Seeder error:", error);
     process.exit(1);
   }
 };
 
-// Chạy hàm
-seedApprovalRequests();
+/* ======================
+   RUN
+====================== */
+await connectDB();
+await seedApprovalRequests();

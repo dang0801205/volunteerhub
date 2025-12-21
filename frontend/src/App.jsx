@@ -37,16 +37,13 @@ import EventDetail from "./pages/public/EventDetailPage.jsx";
  */
 export default function App() {
   const dispatch = useDispatch();
-
-  const {
-    profile: user,
-    profileLoading: loadingUser,
-    profileChecked,
-  } = useSelector((state) => state.user);
+  const { profile: user, profileLoading: loadingUser } = useSelector(
+    (state) => state.user
+  );
 
   useEffect(() => {
-    console.log("🟢 USER PROFILE:", user);
-  }, [user]);
+  console.log("🟢 USER PROFILE:", user);
+}, [user]);
 
   // Local state
   const [authModal, setAuthModal] = useState(null); // "login" | "register" | null
@@ -91,9 +88,7 @@ export default function App() {
     setAuthModal(null);
   };
 
-  // ✅ Gate: có token mà chưa check xong => đợi, đừng cho ProtectedRoute redirect bậy lúc refresh
-  const token = localStorage.getItem("token");
-  if ((token && !profileChecked) || loadingUser) {
+  if (loadingUser) {
     return (
       <div className='min-h-screen w-full flex items-center justify-center bg-gray-100'>
         Đang tải...
@@ -175,16 +170,19 @@ export default function App() {
             </Route>
 
             {/* Volunteer/authenticated user routes */}
-            <Route element={<ProtectedRoute user={user} loading={loadingUser} />}>
+            <Route
+              element={<ProtectedRoute user={user} loading={loadingUser} />}>
               <Route path='/dashboard' element={<Dashboard user={user} />} />
               <Route path='/information' element={<Information />} />
-              <Route path='/history' element={<VolunteerHistory user={user} />} />
+              <Route
+                path='/history'
+                element={<VolunteerHistory user={user} />}
+              />
               <Route
                 path='/media'
                 element={<Media user={user} openAuth={setAuthModal} />}
               />
             </Route>
-
             <Route path='*' element={<Navigate to='/' />} />
           </Routes>
         </main>

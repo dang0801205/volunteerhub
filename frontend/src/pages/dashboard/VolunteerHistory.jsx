@@ -97,17 +97,28 @@ export default function VolunteerHistory({ user }) {
     if (user) {
       dispatch(fetchMyRegistrations());
     }
+    console.log("🟢 history:", myRegistrations);
   }, [dispatch, user]);
 
   // --- 3. LOGIC MAP: Giữ nguyên status gốc từ backend ---
   const registrations = useMemo(() => {
-    return myRegistrations.map((reg) => ({
+  return myRegistrations.map((reg) => {
+    let completionStatus = "not-completed";
+
+    if (reg.attendanceStatus === "completed") {
+      completionStatus = "completed";
+    }
+
+    // in-progress | absent | null => not-completed
+    return {
       ...reg,
       event: reg.eventId,
-      // Ưu tiên lấy status gốc, nếu không có mới fallback về WAITLISTED
       status: reg.status || REGISTRATION_STATUS.WAITLISTED,
-    }));
-  }, [myRegistrations]);
+      completionStatus, // 👈 QUYẾT ĐỊNH TẠI ĐÂY
+    };
+  });
+}, [myRegistrations]);
+
   
   const loading = myLoading;
 

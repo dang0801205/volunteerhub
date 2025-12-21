@@ -18,40 +18,30 @@ const EventReviews = ({ eventId }) => {
   }, [dispatch, eventId]);
 
   const currentChannel = useSelector((state) => state.channel.current);
-  
-  const { profile: user } = useSelector(
-    (state) => state.user
+
+  const { profile: user } = useSelector((state) => state.user);
+
+  const myAttendance = currentChannel.attendances.find(
+    (a) => a.regId.userId === user._id
   );
-  
-    const myAttendance = currentChannel.attendances.find(
-      (a) => a.regId.userId === user._id
-    );
-  
-  // --- TÍNH TOÁN SỐ LIỆU THỐNG KÊ (Memoized) ---
+
   const stats = useMemo(() => {
-    // Giá trị mặc định nếu chưa có reviews
     if (!reviews || reviews.length === 0)
       return { average: 0, total: 0, distribution: [0, 0, 0, 0, 0] };
 
     const total = reviews.length;
-    // Tính tổng điểm
     const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-    // Tính trung bình (làm tròn 1 chữ số thập phân)
     const average = (sum / total).toFixed(1);
 
-    // Tính phân bố sao (Index 0 = 1 sao, ..., Index 4 = 5 sao)
     const distribution = [0, 0, 0, 0, 0];
     reviews.forEach((r) => {
-      // Đảm bảo rating hợp lệ từ 1-5
       const rating = Math.min(Math.max(Math.round(r.rating), 1), 5);
       distribution[rating - 1]++;
     });
 
-    // Trả về distribution đã đảo ngược (để hiển thị 5 sao lên đầu danh sách)
     return { average, total, distribution: distribution.reverse() };
   }, [reviews]);
 
-  // --- HÀM RENDER NGÔI SAO ---
   const renderStars = (rating, size = "w-4 h-4") => {
     return (
       <div className='flex text-yellow-400 gap-0.5'>
@@ -69,7 +59,12 @@ const EventReviews = ({ eventId }) => {
 
   return (
     <div className='space-y-6 pb-10'>
-      {myAttendance && <WriteReview attendance={myAttendance} eventId={currentChannel.event._id} />}
+      {myAttendance && (
+        <WriteReview
+          attendance={myAttendance}
+          eventId={currentChannel.event._id}
+        />
+      )}
 
       {/* 1. REVIEW SUMMARY BOARD (BẢNG THỐNG KÊ) */}
       <div className='bg-white rounded-xl p-6 border border-gray-200 shadow-sm'>
@@ -90,7 +85,7 @@ const EventReviews = ({ eventId }) => {
           {/* Cột Phải: Thanh phân bố (Progress Bars) */}
           <div className='flex-1 w-full space-y-3'>
             {stats.distribution.map((count, index) => {
-              const starNum = 5 - index; // Vì mảng đã reverse: 5, 4, 3, 2, 1
+              const starNum = 5 - index;
               const percentage =
                 stats.total > 0 ? (count / stats.total) * 100 : 0;
 
@@ -122,14 +117,12 @@ const EventReviews = ({ eventId }) => {
         </div>
 
         {loading ? (
-          // Loading Skeleton
           <div className='animate-pulse space-y-4'>
             {[1, 2].map((i) => (
               <div key={i} className='h-32 bg-gray-100 rounded-xl w-full'></div>
             ))}
           </div>
         ) : reviews.length === 0 ? (
-          // Empty State
           <div className='text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300'>
             <div className='w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm'>
               <BarChart3 className='w-8 h-8 text-gray-400' />
@@ -142,14 +135,12 @@ const EventReviews = ({ eventId }) => {
             </p>
           </div>
         ) : (
-          // List Items
           <div className='grid gap-4'>
             {reviews.map((review) => (
               <div
                 key={review._id}
                 className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200'>
                 <div className='flex items-start justify-between mb-3'>
-                  {/* User Info */}
                   <div className='flex items-center gap-3'>
                     <div className='w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200'>
                       {review.user?.avatar ? (

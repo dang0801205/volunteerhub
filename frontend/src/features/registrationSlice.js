@@ -1,6 +1,4 @@
 /** @format */
-
-// src/features/registration/registrationSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api"; // axios instance đã có token
 
@@ -90,12 +88,10 @@ export const rejectRegistration = createAsyncThunk(
 );
 
 // 7. (Dành cho Admin/Manager) Lấy TẤT CẢ đăng ký (Pending + Approved + Rejected)
-// Đã đổi tên từ fetchPending -> fetchAll
 export const fetchAllRegistrations = createAsyncThunk(
   "registration/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      // Gọi API mà bạn đã sửa ở Controller (lấy tất cả không lọc status)
       const { data } = await api.get("/api/registrations/pending");
       return data;
     } catch (err) {
@@ -109,9 +105,7 @@ export const fetchMyQRCode = createAsyncThunk(
   "registration/fetchMyQRCode",
   async (eventId, { rejectWithValue }) => {
     try {
-      const { data } = await api.get(
-        `/api/registrations/${eventId}/my-qr`
-      );
+      const { data } = await api.get(`/api/registrations/${eventId}/my-qr`);
       return data.qrToken;
     } catch (err) {
       return rejectWithValue(
@@ -130,8 +124,6 @@ const registrationSlice = createSlice({
     eventRegistrations: {},
     eventLoading: false,
 
-    // Vẫn giữ tên biến là pendingRegistrations để đỡ phải sửa AdminDashboard
-    // Nhưng thực tế nó chứa TẤT CẢ các loại đăng ký
     pendingRegistrations: [],
     pendingLoading: false,
 
@@ -142,8 +134,6 @@ const registrationSlice = createSlice({
     checkOutLoading: false,
     checkOutMessage: null,
     checkOutError: null,
-
-
 
     successMessage: null,
     error: null,
@@ -190,35 +180,33 @@ const registrationSlice = createSlice({
       state.eventRegistrations[eventId] = registrations;
     });
 
-    // ACCEPT (DUYỆT) - SỬA LOGIC: CẬP NHẬT STATUS
+    // ACCEPT
     builder.addCase(acceptRegistration.fulfilled, (state, action) => {
       state.successMessage = "Đã chấp nhận tình nguyện viên!";
       const idToUpdate = action.meta.arg;
 
-      // Tìm và cập nhật status thay vì xóa
       const index = state.pendingRegistrations.findIndex(
         (reg) => reg._id === idToUpdate
       );
       if (index !== -1) {
-        state.pendingRegistrations[index].status = "registered"; // Hoặc "approved" tùy Enum bạn dùng
+        state.pendingRegistrations[index].status = "registered";
       }
     });
 
-    // REJECT (TỪ CHỐI) - SỬA LOGIC: CẬP NHẬT STATUS
+    // REJECT
     builder.addCase(rejectRegistration.fulfilled, (state, action) => {
       state.successMessage = "Đã từ chối tình nguyện viên.";
       const idToUpdate = action.meta.arg.registrationId;
 
-      // Tìm và cập nhật status thay vì xóa
       const index = state.pendingRegistrations.findIndex(
         (reg) => reg._id === idToUpdate
       );
       if (index !== -1) {
-        state.pendingRegistrations[index].status = "cancelled"; // Hoặc "rejected" tùy Enum bạn dùng
+        state.pendingRegistrations[index].status = "cancelled";
       }
     });
 
-    // FETCH ALL (Thay cho Fetch Pending)
+    // FETCH ALL
     builder.addCase(fetchAllRegistrations.pending, (state) => {
       state.pendingLoading = true;
     });
@@ -239,34 +227,33 @@ const registrationSlice = createSlice({
     });
 
     builder
-    .addCase(fetchMyQRCode.pending, (state) => {
-      state.qrLoading = true;
-      state.qrError = null;
-    })
-    .addCase(fetchMyQRCode.fulfilled, (state, action) => {
-      state.qrLoading = false;
-      state.myQrToken = action.payload;
-    })
-    .addCase(fetchMyQRCode.rejected, (state, action) => {
-      state.qrLoading = false;
-      state.qrError = action.payload;
-    });
+      .addCase(fetchMyQRCode.pending, (state) => {
+        state.qrLoading = true;
+        state.qrError = null;
+      })
+      .addCase(fetchMyQRCode.fulfilled, (state, action) => {
+        state.qrLoading = false;
+        state.myQrToken = action.payload;
+      })
+      .addCase(fetchMyQRCode.rejected, (state, action) => {
+        state.qrLoading = false;
+        state.qrError = action.payload;
+      });
 
     builder
-    .addCase(checkOutByQr.pending, (state) => {
-      state.checkOutLoading = true;
-      state.checkOutMessage = null;
-      state.checkOutError = null;
-    })
-    .addCase(checkOutByQr.fulfilled, (state, action) => {
-      state.checkOutLoading = false;
-      state.checkOutMessage = action.payload.message; // 👈 MESSAGE TỪ API
-    })
-    .addCase(checkOutByQr.rejected, (state, action) => {
-      state.checkOutLoading = false;
-      state.checkOutError = action.payload;
-    });
-
+      .addCase(checkOutByQr.pending, (state) => {
+        state.checkOutLoading = true;
+        state.checkOutMessage = null;
+        state.checkOutError = null;
+      })
+      .addCase(checkOutByQr.fulfilled, (state, action) => {
+        state.checkOutLoading = false;
+        state.checkOutMessage = action.payload.message;
+      })
+      .addCase(checkOutByQr.rejected, (state, action) => {
+        state.checkOutLoading = false;
+        state.checkOutError = action.payload;
+      });
   },
 });
 
@@ -274,10 +261,9 @@ export const checkOutByQr = createAsyncThunk(
   "registration/checkInByQr",
   async ({ qrToken }, { rejectWithValue }) => {
     try {
-      const { data } = await api.post(
-        `/api/registrations/check-out`,
-        { qrToken }
-      );
+      const { data } = await api.post(`/api/registrations/check-out`, {
+        qrToken,
+      });
       return data;
     } catch (err) {
       return rejectWithValue(
@@ -287,5 +273,6 @@ export const checkOutByQr = createAsyncThunk(
   }
 );
 
-export const { clearRegistrationMessages, clearMyQr } = registrationSlice.actions;
+export const { clearRegistrationMessages, clearMyQr } =
+  registrationSlice.actions;
 export default registrationSlice.reducer;

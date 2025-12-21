@@ -7,10 +7,8 @@ import User from "../models/userModel.js";
 import { emitNotification } from "../utils/notificationHelper.js";
 import { pushToUsers } from "../utils/pushHelper.js";
 
-// ================================
-// CREATE POST
-// ================================
-
+// @desc    Đăng bài viết mới vào một kênh thảo luận
+// @access  Private
 export const createPost = asyncHandler(async (req, res) => {
   const { content, channel: channelId } = req.body;
   const image = req.file?.path || null;
@@ -42,7 +40,6 @@ export const createPost = asyncHandler(async (req, res) => {
       .json({ message: "You are not allowed to post in this channel" });
   }
 
-  // 👉 tạo post
   const post = await Post.create({
     content,
     image,
@@ -57,45 +54,40 @@ export const createPost = asyncHandler(async (req, res) => {
   // 🔔 PUSH NOTIFICATION
   // ===============================
 
-
   const memberIds = [
-  ...event.managers.map(id => id.toString()),
-  ...event.volunteers.map(id => id.toString()),
-];
+    ...event.managers.map((id) => id.toString()),
+    ...event.volunteers.map((id) => id.toString()),
+  ];
 
+  const uniqueMemberIds = [...new Set(memberIds)];
 
-const uniqueMemberIds = [...new Set(memberIds)];
+  // loại bỏ người đăng
+  // const notifyUserIds = uniqueMemberIds.filter(id => id !== userId);
+  const notifyUserIds = uniqueMemberIds;
 
+  if (notifyUserIds.length === 0) {
+    console.warn("⚠️ [PUSH] No users to notify. Skip push.");
+  } else {
+    console.log(`🚀 [PUSH] Sending push to ${notifyUserIds.length} user(s)`);
+  }
 
-// loại bỏ người đăng
-// const notifyUserIds = uniqueMemberIds.filter(id => id !== userId);
-const notifyUserIds = uniqueMemberIds;
-
-if (notifyUserIds.length === 0) {
-  console.warn("⚠️ [PUSH] No users to notify. Skip push.");
-} else {
-  console.log(
-    `🚀 [PUSH] Sending push to ${notifyUserIds.length} user(s)`
-  );
-}
-
-// gửi push (KHÔNG block response)
-pushToUsers({
-  userIds: notifyUserIds,
-  title: "Bài viết mới",
-  body: `${req.user.userName} vừa đăng bài trong ${channel.name}`,
-  data: {
-    postId: post._id.toString(),
-    channelId: channelId.toString(),
-    eventId: event._id.toString(),
-  },
-})
-  .then(result => {
-    console.log("📊 [PUSH] Result summary:", result);
+  // gửi push (KHÔNG block response)
+  pushToUsers({
+    userIds: notifyUserIds,
+    title: "Bài viết mới",
+    body: `${req.user.userName} vừa đăng bài trong ${channel.name}`,
+    data: {
+      postId: post._id.toString(),
+      channelId: channelId.toString(),
+      eventId: event._id.toString(),
+    },
   })
-  .catch(err => {
-    console.error(err);
-  });
+    .then((result) => {
+      console.log("📊 [PUSH] Result summary:", result);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   // ===============================
   if (req.io) {
@@ -114,11 +106,9 @@ pushToUsers({
   res.status(201).json(post);
 });
 
-// ================================
-// GET ALL POSTS (ADMIN ONLY)
-// ================================
+// @desc    Lấy danh sách toàn bộ bài viết trên hệ thống
+// @access  Private (Chỉ dành cho Quản trị viên)
 export const getPosts = asyncHandler(async (req, res) => {
-  // admin check đã có ở route
   const posts = await Post.find({})
     .populate("author", "userName role")
     .populate("channel")
@@ -131,9 +121,8 @@ export const getPosts = asyncHandler(async (req, res) => {
   res.json(posts);
 });
 
-// ================================
-// GET ALL POSTS OF A CHANNEL (Admin or event member)
-// ================================
+// @desc    Lấy danh sách bài viết thuộc về một kênh thảo luận cụ thể
+// @access  Private (Quản trị viên hoặc thành viên tham gia sự kiện)
 export const getPostsByChannel = asyncHandler(async (req, res) => {
   const channelId = req.params.channelId;
 
@@ -153,9 +142,7 @@ export const getPostsByChannel = asyncHandler(async (req, res) => {
   const userId = req.user?._id?.toString();
   const userRole = req.user?.role;
 
-  // Admin luôn có quyền
   if (userRole !== "admin") {
-    // Nếu không phải admin, phải là thành viên event
     const isVolunteer =
       event?.volunteers?.some((v) => v._id.toString() === userId) || false;
     const isManager =
@@ -168,7 +155,6 @@ export const getPostsByChannel = asyncHandler(async (req, res) => {
     }
   }
 
-  // Lấy tất cả post của channel (không lấy isDeleted)
   const posts = await Post.find({ channel: channelId, isDeleted: false })
     .populate("author", "userName role")
     .populate({
@@ -180,9 +166,8 @@ export const getPostsByChannel = asyncHandler(async (req, res) => {
   res.json(posts);
 });
 
-// ================================
-// UPDATE POST (OWNER ONLY)
-// ================================
+// @desc    Chỉnh sửa nội dung bài viết đã đăng
+// @access  Private (Chỉ chủ sở hữu bài viết)
 export const updatePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id);
 
@@ -207,9 +192,8 @@ export const updatePost = asyncHandler(async (req, res) => {
   res.json(updatedPost);
 });
 
-// ================================
-// DELETE POST (ROLE BASED)
-// ================================
+// @desc    Xóa bài viết khỏi kênh thảo luận
+// @access  Private (Chủ sở hữu bài viết hoặc Quản trị viên)
 export const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id).populate("author", "role");
 
@@ -223,7 +207,6 @@ export const deletePost = asyncHandler(async (req, res) => {
   const userId = req.user._id.toString();
   const authorId = post.author._id.toString();
 
-  // ROLE-BASED DELETE
   if (userRole === "volunteer") {
     if (userId !== authorId) {
       return res
@@ -237,7 +220,6 @@ export const deletePost = asyncHandler(async (req, res) => {
         .json({ message: "Managers can only delete volunteer posts" });
     }
   } else if (userRole === "admin") {
-    // Admin can delete volunteer and manager posts
     if (!["volunteer", "manager"].includes(authorRole)) {
       return res
         .status(403)
@@ -247,7 +229,6 @@ export const deletePost = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
-  // SOFT DELETE
   post.isDeleted = true;
   await post.save();
 

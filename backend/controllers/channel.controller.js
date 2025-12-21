@@ -9,9 +9,8 @@ import Attendance from "../models/attendanceModel.js";
 import Registration from "../models/registrationModel.js";
 import { emitNotification } from "../utils/notificationHelper.js";
 
-// ================================
-// GET ALL CHANNELS (ADMIN ONLY)
-// ================================
+// @desc    Kiểm tra quyền chỉnh sửa sự kiện (Chủ sở hữu hoặc Admin)
+// @access  Private
 export const getChannels = asyncHandler(async (req, res) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({
@@ -29,10 +28,8 @@ export const getChannels = asyncHandler(async (req, res) => {
   res.json(channels);
 });
 
-// ================================
-// GET CHANNEL BY ID
-// ADMIN or member of event
-// ================================
+// @desc    Lấy thông tin kênh chat theo ID kênh
+// @access  Private (Admin hoặc Thành viên sự kiện)
 export const getChannelById = asyncHandler(async (req, res) => {
   const channel = await Channel.findById(req.params.id)
     .populate({
@@ -72,11 +69,12 @@ export const getChannelById = asyncHandler(async (req, res) => {
   res.json(channel);
 });
 
+// @desc    Lấy danh sách kênh chat dựa trên ID sự kiện
+// @access  Private
 export const getChannelByEventId = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
   const userId = req.user._id.toString();
 
-  // 1️⃣ Lấy channel + event + posts + author
   const channel = await Channel.findOne({ event: eventId })
     .populate({
       path: "event",
@@ -99,7 +97,6 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Channel not found" });
   }
 
-  // 2️⃣ Check quyền
   const event = channel.event;
 
   const isAdmin = req.user.role === "admin";
@@ -112,16 +109,12 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     });
   }
 
-  // ===============================
-  // 3️⃣ Lấy reactions cho POSTS
-  // ===============================
   const postIds = channel.posts.map((p) => p._id);
 
   const postReactions = await Reaction.find({
     post: { $in: postIds },
   }).populate("user", "userName role");
 
-  // Group reactions theo postId
   const reactionsByPost = {};
   postReactions.forEach((r) => {
     const key = r.post.toString();
@@ -129,9 +122,6 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     reactionsByPost[key].push(r);
   });
 
-  // ===============================
-  // 4️⃣ Lấy COMMENTS (level 1)
-  // ===============================
   const comments = await Comment.find({
     post: { $in: postIds },
     parentComment: null,
@@ -142,9 +132,6 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
 
   const commentIds = comments.map((c) => c._id);
 
-  // ===============================
-  // 5️⃣ Lấy REPLIES (level 2)
-  // ===============================
   const replies = await Comment.find({
     parentComment: { $in: commentIds },
     isDeleted: false,
@@ -152,14 +139,10 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     .populate("author", "userName role")
     .sort({ createdAt: 1 });
 
-  // ===============================
-  // 6️⃣ Lấy reactions cho COMMENTS + REPLIES
-  // ===============================
   const commentReactions = await Reaction.find({
     comment: { $in: [...commentIds, ...replies.map((r) => r._id)] },
   }).populate("user", "userName role");
 
-  // Group reactions theo commentId
   const reactionsByComment = {};
   commentReactions.forEach((r) => {
     const key = r.comment.toString();
@@ -167,9 +150,6 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     reactionsByComment[key].push(r);
   });
 
-  // ===============================
-  // 7️⃣ Gắn replies vào comment cha
-  // ===============================
   const repliesByParent = {};
   replies.forEach((reply) => {
     const key = reply.parentComment.toString();
@@ -180,9 +160,6 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     });
   });
 
-  // ===============================
-  // 8️⃣ Gắn comments + reactions + replies vào post
-  // ===============================
   const commentsByPost = {};
   comments.forEach((comment) => {
     const key = comment.post.toString();
@@ -194,28 +171,18 @@ export const getChannelByEventId = asyncHandler(async (req, res) => {
     });
   });
 
-  // ===============================
-  // 9️⃣ Final payload cho frontend
-  // ===============================
   const posts = channel.posts.map((post) => ({
     ...post.toObject(),
     reactions: reactionsByPost[post._id.toString()] || [],
     comments: commentsByPost[post._id.toString()] || [],
   }));
 
-  // ===============================
-  // 🔟 Lấy ATTENDANCES của EVENT
-  // ===============================
-
-  // Lấy tất cả registration của event
   const registrations = await Registration.find({
     eventId: event._id,
   }).select("_id userId");
 
-  // Map regId
   const regIds = registrations.map((r) => r._id);
 
-  // Lấy attendance theo regId + feedback
   const attendances = await Attendance.find({
     regId: { $in: regIds },
   })

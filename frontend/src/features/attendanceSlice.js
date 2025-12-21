@@ -2,8 +2,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api";
 
-// 1. FETCH LIST (Định nghĩa cái này trước để gọi ở dưới)
-
+// 1. FETCH LIST
 export const fetchEventAttendances = createAsyncThunk(
   "attendance/fetchByEvent",
   async (eventId, { rejectWithValue }) => {
@@ -23,14 +22,11 @@ export const fetchEventAttendances = createAsyncThunk(
 
 export const checkinAttendance = createAsyncThunk(
   "attendance/checkin",
-  // Tham số thứ 2 của thunkAPI chứa 'dispatch'
+
   async ({ regId, eventId }, { rejectWithValue, dispatch }) => {
     try {
-      // BƯỚC 1: Gọi API Check-in
       const { data } = await api.post("/api/attendances/checkin", { regId });
 
-      // BƯỚC 2: 🔥 NGAY LẬP TỨC GỌI API LẤY DANH SÁCH MỚI 🔥
-      // Đây chính là chìa khóa để đồng bộ dữ liệu mà không cần F5
       await dispatch(fetchEventAttendances(eventId));
 
       return { ...data, regId, eventId };
@@ -52,7 +48,6 @@ export const checkoutAttendance = createAsyncThunk(
         regId,
       });
 
-      // BƯỚC 2: Tự động cập nhật lại danh sách
       await dispatch(fetchEventAttendances(eventId));
 
       return { ...data, regId, eventId };
@@ -95,11 +90,11 @@ export const fetchEventFeedbacks = createAsyncThunk(
   "attendance/fetchFeedbacks",
   async (eventId, { rejectWithValue }) => {
     try {
-      // Gọi API: GET /api/attendances/event/:eventId/feedbacks
+      // API: GET /api/attendances/event/:eventId/feedbacks
       const { data } = await api.get(
         `/api/attendances/event/${eventId}/feedbacks`
       );
-      // Backend trả về: { message: "...", data: [...] }
+
       return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Lỗi tải đánh giá");

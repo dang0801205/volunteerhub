@@ -1,8 +1,9 @@
+/** @format */
+
 const requestPermission = async () => {
   const permission = await Notification.requestPermission();
   console.log("Notification permission:", permission);
 };
-
 
 export async function registerPush() {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -26,19 +27,28 @@ export async function registerPush() {
 
   const token = localStorage.getItem("token");
 
-  
-    await fetch("http://localhost:5000/api/push/subscribe", {
+  await fetch("http://localhost:5000/api/push/subscribe", {
     method: "POST",
     headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ subscription }), 
-    });
+    body: JSON.stringify({ subscription }),
+  });
 
   alert("Đăng ký thông báo thành công!");
   requestPermission();
-
 }
 
-function urlBase64ToUint8Array(base64String) { const padding = "=".repeat((4 - (base64String.length % 4)) % 4); const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/"); const rawData = atob(base64); const Uint8ArrayData = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { Uint8ArrayData[i] = rawData.charCodeAt(i); } return Uint8ArrayData; }
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, "+")
+    .replace(/_/g, "/");
+  const rawData = atob(base64);
+  const Uint8ArrayData = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    Uint8ArrayData[i] = rawData.charCodeAt(i);
+  }
+  return Uint8ArrayData;
+}

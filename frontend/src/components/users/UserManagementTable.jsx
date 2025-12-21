@@ -24,7 +24,7 @@ const AdminUsersTab = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [isExpanded, setIsExpanded] = useState(false); // State mở rộng
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const filteredUsers = users.filter((user) => {
     const search = searchTerm.toLowerCase();

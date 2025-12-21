@@ -20,10 +20,6 @@ export const updateUserProfile = createAsyncThunk(
   "user/updateProfile",
   async (formData, { rejectWithValue }) => {
     try {
-      // --- ĐÃ SỬA: Bỏ config set header thủ công ---
-      // Axios sẽ tự động phát hiện FormData và thêm header 'Content-Type: multipart/form-data; boundary=...'
-      // Nếu set thủ công sẽ làm mất boundary -> Backend không nhận được file.
-
       const { data } = await api.put("/api/user/profile", formData);
       return data;
     } catch (err) {
@@ -90,7 +86,7 @@ export const updateUserStatus = createAsyncThunk(
   async ({ userId, status }, { rejectWithValue }) => {
     try {
       const { data } = await api.put(`/api/user/${userId}/status`, { status });
-      return data; // Mong đợi: { message, user: { ... } }
+      return data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Không thể thay đổi trạng thái tài khoản"
@@ -105,7 +101,7 @@ export const updateUserRole = createAsyncThunk(
   async ({ userId, role }, { rejectWithValue }) => {
     try {
       const { data } = await api.put(`/api/user/${userId}/role`, { role });
-      return data; // ⚠️ Cần đảm bảo Backend trả về { user: ... } hoặc { message, user: ... }
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -117,9 +113,8 @@ export const fetchSuggestedManagers = createAsyncThunk(
   "user/fetchSuggestedManagers",
   async (_, { rejectWithValue }) => {
     try {
-      // Gọi đúng route bạn đã khai báo trong user.routes.js
       const { data } = await api.get("/api/user/suggested-managers");
-      return data.data; // Backend trả về { count, data: [...] }
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -134,7 +129,6 @@ const userSlice = createSlice({
     profileLoading: false,
     profileError: null,
 
-    // ✅ THÊM FLAG NÀY
     profileChecked: false,
 
     users: [],
@@ -167,7 +161,6 @@ const userSlice = createSlice({
       state.error = null;
       state.selectedUser = null;
 
-      // ✅ logout xong thì coi như “đã check xong và không có user”
       state.profileChecked = true;
     },
     clearSelectedUser: (state) => {
@@ -178,41 +171,33 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Profile
+
       .addCase(fetchUserProfile.pending, (state) => {
         state.profileLoading = true;
         state.profileError = null;
 
-        // ✅ đang check
         state.profileChecked = false;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.profileLoading = false;
         state.profile = action.payload;
 
-        // ✅ check xong
         state.profileChecked = true;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.profileLoading = false;
         state.profileError = action.payload;
 
-        // ✅ quan trọng: fail thì cũng set profile về null rõ ràng
         state.profile = null;
 
-        // ✅ check xong (dù fail)
         state.profileChecked = true;
       })
 
-      // Update Profile
       .addCase(updateUserProfile.fulfilled, (state, action) => {
-        // Cần đảm bảo API trả về object user đã update, hoặc wrapper { user: ... }
-        // Nếu API trả về { message, user }, cần sửa thành action.payload.user
         state.profile = action.payload.user || action.payload;
         state.message = "Cập nhật hồ sơ thành công!";
       })
 
-      // Change Password
       .addCase(changeUserPassword.fulfilled, (state, action) => {
         state.message = action.payload;
       })
@@ -220,7 +205,6 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
 
-      // All Users
       .addCase(fetchAllUsers.pending, (state) => {
         state.usersLoading = true;
       })
@@ -233,16 +217,12 @@ const userSlice = createSlice({
         state.usersError = action.payload;
       })
 
-      // Delete User
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter((u) => u._id !== action.payload);
         state.message = "Xóa người dùng thành công";
       })
 
-      // Update Role
       .addCase(updateUserRole.fulfilled, (state, action) => {
-        // --- ĐÃ SỬA: Kiểm tra cấu trúc trả về ---
-        // Giả sử API trả về { message, user } giống updateStatus
         const updatedUser = action.payload.user || action.payload;
 
         state.users = state.users.map((u) =>
@@ -254,9 +234,7 @@ const userSlice = createSlice({
         state.message = action.payload.message || "Cập nhật vai trò thành công";
       })
 
-      // Update Status
       .addCase(updateUserStatus.fulfilled, (state, action) => {
-        // Giả sử API trả về { message, user }
         const { user: updatedUser, message } = action.payload;
         state.users = state.users.map((u) =>
           u._id === updatedUser._id ? { ...u, status: updatedUser.status } : u
@@ -270,7 +248,6 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Fetch By ID
       .addCase(fetchUserById.pending, (state) => {
         state.selectedUserLoading = true;
         state.selectedUserError = null;

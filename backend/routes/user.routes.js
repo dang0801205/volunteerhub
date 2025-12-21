@@ -23,12 +23,7 @@ import {
 } from "../controllers/user.controller.js";
 const router = express.Router();
 
-// =================================================================
-// 1. CÁC ROUTE CỤ THỂ (STATIC ROUTES) - PHẢI ĐẶT TRÊN CÙNG
-// =================================================================
-
 // @route  GET /api/users/suggested-managers
-// 🔥 QUAN TRỌNG: Phải đặt trên route /:id để không bị nhận nhầm là ID
 router.get(
   "/suggested-managers",
   protect,
@@ -48,16 +43,8 @@ router
 // @route  PUT /api/users/profile/change-password
 router.put("/profile/change-password", protect, changeUserPassword);
 
-// =================================================================
-// 2. ROUTE GỐC (ROOT)
-// =================================================================
-
 // @route  GET /api/users/
 router.get("/", protect, allowAdminOrManager, getAllUsers);
-
-// =================================================================
-// 3. CÁC ROUTE ĐỘNG VỚI PARAM :ID (DYNAMIC ROUTES) - ĐẶT CUỐI CÙNG
-// =================================================================
 
 // @route  GET /api/users/:id
 // @route  DELETE /api/users/:id

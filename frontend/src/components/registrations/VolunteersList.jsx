@@ -13,7 +13,6 @@ const VolunteersList = ({
   userRole,
   addToast,
 }) => {
-  // Logic tạo volunteers (populate user vào reg object)
   const volunteers = registrations.map((reg) => {
     const user =
       users.find(
@@ -28,7 +27,6 @@ const VolunteersList = ({
     };
   });
 
-  // Kiểm tra quyền xem
   if (!canView && !compact) {
     return (
       <div className='bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center'>
@@ -41,7 +39,6 @@ const VolunteersList = ({
     );
   }
 
-  // Danh sách rỗng
   if (volunteers.length === 0) {
     return (
       <div className='bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center'>
@@ -51,7 +48,6 @@ const VolunteersList = ({
     );
   }
 
-  // Logic rendering
   return (
     <div>
       {!compact && (

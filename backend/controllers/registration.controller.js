@@ -9,9 +9,6 @@ import {
   emitToMultiple,
 } from "../utils/notificationHelper.js";
 import { pushToUsers } from "../utils/pushHelper.js";
-
-
-// Import Enum từ file constants (Đảm bảo đường dẫn đúng với cấu trúc dự án của bạn)
 import { REGISTRATION_STATUS, EVENT_STATUS } from "../config/typeEnum.js";
 
 // @desc    Đăng ký tham gia sự kiện (Mặc định là WAITLISTED - Chờ duyệt)
@@ -20,22 +17,18 @@ import { REGISTRATION_STATUS, EVENT_STATUS } from "../config/typeEnum.js";
 const registerForEvent = asyncHandler(async (req, res) => {
   const { eventId } = req.body;
 
-  // 1. Kiểm tra sự kiện có tồn tại và đã được Approved chưa
   const event = await Event.findById(eventId);
   if (!event || event.status !== EVENT_STATUS.APPROVED) {
     res.status(400);
     throw new Error("Sự kiện không tồn tại hoặc chưa được duyệt");
   }
 
-  // 2. Kiểm tra xem User đã có hồ sơ đăng ký chưa
   const existingReg = await Registration.findOne({
     userId: req.user._id,
     eventId,
   });
 
   if (existingReg) {
-    // TRƯỜNG HỢP: Đã từng đăng ký nhưng bị hủy (do tự hủy hoặc bị từ chối)
-    // -> Cho phép đăng ký lại (Reset về trạng thái WAITLISTED)
     if (existingReg.status === REGISTRATION_STATUS.CANCELLED) {
       existingReg.status = REGISTRATION_STATUS.WAITLISTED;
       await existingReg.save();
@@ -46,19 +39,16 @@ const registerForEvent = asyncHandler(async (req, res) => {
       });
     }
 
-    // TRƯỜNG HỢP: Đang chờ (WAITLISTED) hoặc Đã tham gia (REGISTERED)
     res.status(400);
     throw new Error("Bạn đã đăng ký sự kiện này rồi.");
   }
 
-  // 3. Tạo đơn đăng ký mới (Status: WAITLISTED)
   const registration = await Registration.create({
     userId: req.user._id,
     eventId,
     status: REGISTRATION_STATUS.WAITLISTED,
   });
 
-  // LƯU Ý: KHÔNG tăng event.currentParticipants ở đây vì chưa được duyệt!
   emitNotification(req, event.createdBy.toString(), {
     title: "Đăng ký mới",
     message: `Có tình nguyện viên mới vừa đăng ký tham gia sự kiện "${event.title}".`,
@@ -72,7 +62,7 @@ const registerForEvent = asyncHandler(async (req, res) => {
 });
 
 // @desc    Hủy đăng ký (User tự hủy)
-// @route   DELETE /api/registrations/:id (Thực tế là update status)
+// @route   DELETE /api/registrations/:id
 // @access  Private (Owner/Manager)
 const cancelRegistration = asyncHandler(async (req, res) => {
   const registration = await Registration.findById(req.params.id);
@@ -82,7 +72,6 @@ const cancelRegistration = asyncHandler(async (req, res) => {
     throw new Error("Không tìm thấy đăng ký");
   }
 
-  // Kiểm tra quyền: Chỉ chủ sở hữu đơn hoặc Manager mới được hủy
   if (
     registration.userId.toString() !== req.user._id.toString() &&
     req.user.role !== "manager" &&
@@ -92,7 +81,6 @@ const cancelRegistration = asyncHandler(async (req, res) => {
     throw new Error("Không có quyền thực hiện hành động này");
   }
 
-  // Nếu đơn đã hủy rồi thì báo lỗi hoặc return luôn
   if (registration.status === REGISTRATION_STATUS.CANCELLED) {
     return res
       .status(400)
@@ -101,15 +89,11 @@ const cancelRegistration = asyncHandler(async (req, res) => {
 
   const event = await Event.findById(registration.eventId);
 
-  // LOGIC ĐẾM SỐ LƯỢNG (QUAN TRỌNG):
-  // Chỉ trừ slot nếu User đang ở trạng thái REGISTERED (đã chiếm chỗ).
-  // Nếu đang WAITLISTED (chưa chiếm chỗ) thì không cần trừ.
   if (registration.status === REGISTRATION_STATUS.REGISTERED && event) {
     event.currentParticipants = Math.max(0, event.currentParticipants - 1);
     await event.save();
   }
 
-  // Soft Delete: Chuyển trạng thái sang CANCELLED
   registration.status = REGISTRATION_STATUS.CANCELLED;
   await registration.save();
 
@@ -122,32 +106,27 @@ const cancelRegistration = asyncHandler(async (req, res) => {
 const getMyRegistrations = asyncHandler(async (req, res) => {
   const registrations = await Registration.find({ userId: req.user._id })
     .populate("eventId")
-    .sort({ createdAt: -1 }); // Mới nhất lên đầu
+    .sort({ createdAt: -1 });
 
-    // 1️⃣ Lấy danh sách registration ids
-    const regIds = registrations.map((r) => r._id);
+  const regIds = registrations.map((r) => r._id);
 
-    // 2️⃣ Tìm attendance tương ứng
-    const attendances = await Attendance.find({
-      regId: { $in: regIds },
-    });
+  const attendances = await Attendance.find({
+    regId: { $in: regIds },
+  });
 
-    // 3️⃣ Tạo map regId -> attendance
-    const attendanceMap = {};
-    attendances.forEach((att) => {
-      attendanceMap[att.regId.toString()] = att;
-    });
+  const attendanceMap = {};
+  attendances.forEach((att) => {
+    attendanceMap[att.regId.toString()] = att;
+  });
 
-    // 4️⃣ Gắn thêm field mới (KHÔNG xoá field cũ)
-    const result = registrations.map((reg) => {
-      const att = attendanceMap[reg._id.toString()];
+  const result = registrations.map((reg) => {
+    const att = attendanceMap[reg._id.toString()];
 
-      return {
-        ...reg.toObject(), 
-        attendanceStatus: att?.status || null, // 👈 field mới
-      };
-    });
-
+    return {
+      ...reg.toObject(),
+      attendanceStatus: att?.status || null,
+    };
+  });
 
   res.status(200).json({
     success: true,
@@ -184,7 +163,6 @@ export const checkOutByQr = async (req, res) => {
       });
     }
 
-    // 1️⃣ Tìm registration theo qrToken
     const registration = await Registration.findOne({ qrToken });
 
     if (!registration) {
@@ -193,7 +171,6 @@ export const checkOutByQr = async (req, res) => {
       });
     }
 
-    // 2️⃣ Tìm event
     const event = await Event.findById(registration.eventId);
 
     if (!event) {
@@ -202,7 +179,6 @@ export const checkOutByQr = async (req, res) => {
       });
     }
 
-    // 3️⃣ Kiểm tra user có phải manager của event không
     const isManager = event.managers.some(
       (managerId) => managerId.toString() === userId.toString()
     );
@@ -213,7 +189,6 @@ export const checkOutByQr = async (req, res) => {
       });
     }
 
-    // 4️⃣ Tìm attendance
     const attendance = await Attendance.findOne({
       regId: registration._id,
     });
@@ -226,19 +201,16 @@ export const checkOutByQr = async (req, res) => {
 
     console.log("ATTENDANCE FOUND:", attendance._id);
 
-    // 5️⃣ Kiểm tra đã check-out chưa
     if (attendance.checkOut) {
       return res.status(400).json({
         message: "Người dùng đã check-out trước đó",
       });
     }
 
-    // 6️⃣ Thực hiện check-out
     attendance.checkOut = new Date();
-    attendance.status = "completed"; // Cập nhật trạng thái thành completed
+    attendance.status = "completed";
     await attendance.save();
 
-    // 7️⃣ Populate để trả dữ liệu đẹp
     await attendance.populate({
       path: "regId",
       populate: [
@@ -268,7 +240,6 @@ export const checkOutByQr = async (req, res) => {
 // @route   GET /api/registrations/admin/all
 // @access  Private (Manager/Admin)
 const getAllRegistrationsForManagement = asyncHandler(async (req, res) => {
-  // 1. XÓA ĐIỀU KIỆN status: { ... } ĐỂ LẤY TẤT CẢ
   const registrations = await Registration.find({})
     .populate({
       path: "userId",
@@ -303,7 +274,6 @@ const acceptRegistration = asyncHandler(async (req, res) => {
     throw new Error("Sự kiện không tồn tại");
   }
 
-  // Check quyền sở hữu Event (Manager tạo ra event này mới được duyệt)
   if (
     event.createdBy.toString() !== req.user._id.toString() &&
     req.user.role !== "admin"
@@ -312,40 +282,31 @@ const acceptRegistration = asyncHandler(async (req, res) => {
     throw new Error("Bạn không có quyền duyệt đơn cho sự kiện này");
   }
 
-  // Kiểm tra sức chứa (Capacity)
   if (event.currentParticipants >= event.maxParticipants) {
     res.status(400);
     throw new Error("Sự kiện đã đủ người tham gia, không thể duyệt thêm.");
   }
 
-  // Chỉ xử lý nếu đơn chưa được duyệt (tránh duyệt đi duyệt lại bị cộng dồn số)
   if (registration.status !== REGISTRATION_STATUS.REGISTERED) {
-    // 1. Cập nhật trạng thái User thành REGISTERED
     registration.status = REGISTRATION_STATUS.REGISTERED;
     await registration.save();
 
-    // 2️. Add user to volunteers (KHÔNG TRÙNG)
     const userIdStr = registration.userId.toString();
-    const volunteerIds = event.volunteers.map(v => v.toString());
+    const volunteerIds = event.volunteers.map((v) => v.toString());
 
     if (!volunteerIds.includes(userIdStr)) {
       event.volunteers.push(registration.userId);
-    } 
+    }
 
     await event.save();
 
-
-    // 3. Tăng số lượng người tham gia trong Event (ĐÂY LÀ CHỖ DUY NHẤT TĂNG)
     event.currentParticipants += 1;
     await event.save();
 
-    // 4. TẠO ATTENDANCE
     await Attendance.create({
       regId: registration._id,
-      status: "in-progress", // đợi checkout
+      status: "in-progress",
     });
-
-    // 5️. WEB PUSH: thông báo user đã được duyệt
     await pushToUsers({
       userIds: [registration.userId],
       title: "🎉 Đăng ký được duyệt",
@@ -357,18 +318,18 @@ const acceptRegistration = asyncHandler(async (req, res) => {
     });
 
     emitNotification(req, registration.userId.toString(), {
-    title: "Kết quả đăng ký sự kiện",
-    message:
-      registration.status === "registered"
-        ? `Chúc mừng! Bạn đã được duyệt tham gia sự kiện "${event.title}".`
-        : `Yêu cầu tham gia sự kiện "${event.title}" của bạn đã bị từ chối.`,
-    type: registration.status === "registered" ? "success" : "danger",
-    link: "/history",
-  });
-  res.json({
-    message: "Đã duyệt đơn đăng ký",
-    data: registration,
-  });
+      title: "Kết quả đăng ký sự kiện",
+      message:
+        registration.status === "registered"
+          ? `Chúc mừng! Bạn đã được duyệt tham gia sự kiện "${event.title}".`
+          : `Yêu cầu tham gia sự kiện "${event.title}" của bạn đã bị từ chối.`,
+      type: registration.status === "registered" ? "success" : "danger",
+      link: "/history",
+    });
+    res.json({
+      message: "Đã duyệt đơn đăng ký",
+      data: registration,
+    });
   }
 });
 
@@ -385,7 +346,6 @@ const rejectRegistration = asyncHandler(async (req, res) => {
 
   const event = await Event.findById(registration.eventId);
 
-  // Check quyền Manager
   if (
     event &&
     event.createdBy.toString() !== req.user._id.toString() &&
@@ -395,15 +355,10 @@ const rejectRegistration = asyncHandler(async (req, res) => {
     throw new Error("Bạn không có quyền từ chối đơn này");
   }
 
-  // LOGIC ĐẾM SỐ LƯỢNG:
-  // Nếu User đã được duyệt (REGISTERED) mà Manager đổi ý muốn Reject/Kick
-  // -> Phải trừ currentParticipants đi 1.
   if (registration.status === REGISTRATION_STATUS.REGISTERED && event) {
     event.currentParticipants = Math.max(0, event.currentParticipants - 1);
     await event.save();
   }
-
-  // Chuyển trạng thái sang CANCELLED (Gộp chung Rejected và Cancelled vào đây theo yêu cầu)
   registration.status = REGISTRATION_STATUS.CANCELLED;
   await registration.save();
   emitNotification(req, registration.userId.toString(), {

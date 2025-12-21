@@ -13,12 +13,9 @@ export const connectSocket = (user) => {
     socket.connect();
 
     socket.on("connect", () => {
-      console.log("✅ Đã kết nối Socket thời gian thực");
-
       socket.emit("join", user._id);
 
       if (user.role === "admin") {
-        //socket.emit("join", "admin");
         socket.emit("join-admin");
       }
     });
@@ -28,6 +25,5 @@ export const connectSocket = (user) => {
 export const disconnectSocket = () => {
   if (socket.connected) {
     socket.disconnect();
-    console.log("❌ Đã ngắt kết nối Socket");
   }
 };

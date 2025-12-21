@@ -1,9 +1,5 @@
-/**
- * @file index.js
- * @description Central export point for all custom hooks
- * @pattern Barrel Export Pattern
- */
+/** @format */
 
-export { useToast } from './useToast';
-export { useGeolocation } from './useGeolocation';
-export { useAdminDashboard } from './useAdminDashboard';
+export { useToast } from "./useToast";
+export { useGeolocation } from "./useGeolocation";
+export { useAdminDashboard } from "./useAdminDashboard";

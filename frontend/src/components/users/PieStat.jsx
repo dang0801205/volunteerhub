@@ -3,14 +3,11 @@
 import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
-// Component hiển thị thống kê dạng biểu đồ tròn
-// data format: [{ name: "Label", value: 10, color: "#hex" }, ...]
 export default function PieStat({
   title = "Thống kê",
   data = [],
   height = 250,
 }) {
-  // Tính tổng để hiển thị phần trăm nếu cần
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
@@ -31,11 +28,10 @@ export default function PieStat({
                 nameKey='name'
                 cx='50%'
                 cy='50%'
-                innerRadius={60} // Tạo biểu đồ dạng Donut
+                innerRadius={60}
                 outerRadius={80}
                 paddingAngle={5}
-                stroke='none' // Bỏ viền trắng mặc định
-              >
+                stroke='none'>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color || "#10b981"} />
                 ))}
@@ -57,7 +53,6 @@ export default function PieStat({
         )}
       </div>
 
-      {/* Legend (Chú thích) */}
       <div className='mt-4 space-y-3'>
         {data.map((entry, index) => {
           const percentage =

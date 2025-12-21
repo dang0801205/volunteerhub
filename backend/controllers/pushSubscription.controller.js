@@ -1,10 +1,10 @@
+/** @format */
+
 import PushSubscription from "../models/pushSubscriptionModel.js";
 import webpush from "web-push";
 
-/**
- * POST /api/push/subscribe
- * Lưu hoặc update subscription
- */
+// @desc    Lưu hoặc cập nhật thông tin đăng ký nhận thông báo (Subscription Token)
+// @access  Private
 export const saveSubscription = async (req, res) => {
   try {
     const { subscription } = req.body;
@@ -18,7 +18,6 @@ export const saveSubscription = async (req, res) => {
 
     let existing = await PushSubscription.findOne({ endpoint });
 
-    // 🔁 Endpoint đã tồn tại → update userId
     if (existing) {
       existing.userId = userId;
       existing.keys = keys;
@@ -31,7 +30,6 @@ export const saveSubscription = async (req, res) => {
       });
     }
 
-    // ➕ Tạo mới
     const newSub = await PushSubscription.create({
       userId,
       endpoint,
@@ -49,9 +47,8 @@ export const saveSubscription = async (req, res) => {
   }
 };
 
-/**
- * POST /api/push/unsubscribe
- */
+// @desc    Hủy đăng ký và xóa thông tin nhận thông báo
+// @access  Private
 export const deleteSubscription = async (req, res) => {
   try {
     const { endpoint } = req.body;
@@ -69,9 +66,8 @@ export const deleteSubscription = async (req, res) => {
   }
 };
 
-/**
- * POST /api/push/send-to-user
- */
+// @desc    Gửi thông báo đẩy (Push Notification) trực tiếp cho một người dùng cụ thể
+// @access  Private (Admin/System)
 export const sendNotificationToUser = async (req, res) => {
   try {
     const { userId, title, body } = req.body;
@@ -106,7 +102,6 @@ export const sendNotificationToUser = async (req, res) => {
 
         console.error("PUSH ERROR:", err.statusCode, sub.endpoint);
 
-        // 🔥 Subscription hết hạn → xoá
         if (err.statusCode === 404 || err.statusCode === 410) {
           await PushSubscription.deleteOne({ _id: sub._id });
         }

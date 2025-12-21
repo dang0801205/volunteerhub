@@ -19,44 +19,41 @@ import { motion } from "framer-motion";
 import { fetchMyRegistrations } from "../../features/registrationSlice";
 import { REGISTRATION_STATUS } from "../../types";
 
-// --- 1. SỬA LẠI MAP: Dùng key động từ REGISTRATION_STATUS ---
 const STATUS_MAP = {
-  // Trạng thái chờ (Waitlisted/Pending)
   [REGISTRATION_STATUS.WAITLISTED]: {
     label: "Chờ duyệt",
     color: "bg-yellow-100 text-yellow-700",
     icon: Hourglass,
   },
-  [REGISTRATION_STATUS.PENDING]: { // Fallback nếu backend dùng pending
+  [REGISTRATION_STATUS.PENDING]: {
     label: "Đang xử lý",
     color: "bg-yellow-100 text-yellow-700",
     icon: Hourglass,
   },
-  // Trạng thái đã duyệt (Registered/Accepted)
+
   [REGISTRATION_STATUS.REGISTERED]: {
     label: "Đã duyệt",
     color: "bg-green-100 text-green-700",
     icon: CheckCircle2,
   },
-  [REGISTRATION_STATUS.ACCEPTED]: { // Fallback
+  [REGISTRATION_STATUS.ACCEPTED]: {
     label: "Đã duyệt",
     color: "bg-green-100 text-green-700",
     icon: CheckCircle2,
   },
-  // Trạng thái bị từ chối/Hủy (Cancelled/Rejected)
+
   [REGISTRATION_STATUS.CANCELLED]: {
     label: "Đã hủy",
     color: "bg-red-100 text-red-700",
     icon: XCircle,
   },
-  [REGISTRATION_STATUS.REJECTED]: { // Fallback
+  [REGISTRATION_STATUS.REJECTED]: {
     label: "Bị từ chối",
     color: "bg-red-100 text-red-700",
     icon: XCircle,
   },
 };
 
-// --- 2. SỬA LẠI FILTER: Dùng value chuẩn ---
 const STATUS_FILTERS = [
   { label: "Tất cả", value: "all" },
   { label: "Chờ duyệt", value: REGISTRATION_STATUS.WAITLISTED },
@@ -97,35 +94,30 @@ export default function VolunteerHistory({ user }) {
     if (user) {
       dispatch(fetchMyRegistrations());
     }
-    console.log("🟢 history:", myRegistrations);
   }, [dispatch, user]);
 
-  // --- 3. LOGIC MAP: Giữ nguyên status gốc từ backend ---
   const registrations = useMemo(() => {
-  return myRegistrations.map((reg) => {
-    let completionStatus = "not-completed";
+    return myRegistrations.map((reg) => {
+      let completionStatus = "not-completed";
 
-    if (reg.attendanceStatus === "completed") {
-      completionStatus = "completed";
-    }
+      if (reg.attendanceStatus === "completed") {
+        completionStatus = "completed";
+      }
 
-    // in-progress | absent | null => not-completed
-    return {
-      ...reg,
-      event: reg.eventId,
-      status: reg.status || REGISTRATION_STATUS.WAITLISTED,
-      completionStatus, // 👈 QUYẾT ĐỊNH TẠI ĐÂY
-    };
-  });
-}, [myRegistrations]);
+      return {
+        ...reg,
+        event: reg.eventId,
+        status: reg.status || REGISTRATION_STATUS.WAITLISTED,
+        completionStatus,
+      };
+    });
+  }, [myRegistrations]);
 
-  
   const loading = myLoading;
 
   const stats = useMemo(() => {
     const total = registrations.length;
 
-    // Sử dụng đúng Enum để so sánh
     const pending = registrations.filter(
       (r) => r.status === REGISTRATION_STATUS.WAITLISTED
     ).length;
@@ -135,7 +127,9 @@ export default function VolunteerHistory({ user }) {
     ).length;
 
     const rejected = registrations.filter(
-      (r) => r.status === REGISTRATION_STATUS.CANCELLED || r.status === REGISTRATION_STATUS.REJECTED
+      (r) =>
+        r.status === REGISTRATION_STATUS.CANCELLED ||
+        r.status === REGISTRATION_STATUS.REJECTED
     ).length;
 
     const completed = registrations.filter(
@@ -280,8 +274,16 @@ export default function VolunteerHistory({ user }) {
                   ))}
                 </select>
                 <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
-                  <svg className='h-4 w-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M19 9l-7 7-7-7'></path>
+                  <svg
+                    className='h-4 w-4 text-gray-400'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M19 9l-7 7-7-7'></path>
                   </svg>
                 </div>
               </div>
@@ -307,8 +309,16 @@ export default function VolunteerHistory({ user }) {
                   ))}
                 </select>
                 <div className='absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none'>
-                  <svg className='h-4 w-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M19 9l-7 7-7-7'></path>
+                  <svg
+                    className='h-4 w-4 text-gray-400'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M19 9l-7 7-7-7'></path>
                   </svg>
                 </div>
               </div>
@@ -370,7 +380,6 @@ function RegistrationCard({ registration, index }) {
     registeredAt,
   } = registration;
 
-  // --- 4. SỬA HIỂN THỊ CARD: Lấy info từ Map mới ---
   const statusInfo = STATUS_MAP[status] || {
     label: "Không xác định",
     color: "bg-gray-100 text-gray-600",
@@ -440,9 +449,10 @@ function RegistrationCard({ registration, index }) {
                 <StatusIcon className='h-3.5 w-3.5' />
                 {statusInfo.label}
               </span>
-              
+
               {/* Hiển thị badge hoàn thành nếu đã được duyệt */}
-              {(status === REGISTRATION_STATUS.REGISTERED || status === REGISTRATION_STATUS.ACCEPTED) && (
+              {(status === REGISTRATION_STATUS.REGISTERED ||
+                status === REGISTRATION_STATUS.ACCEPTED) && (
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${completionInfo.color}`}>
                   <CompletionIcon className='h-3.5 w-3.5' />

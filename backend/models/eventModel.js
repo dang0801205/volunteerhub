@@ -35,13 +35,12 @@ const eventSchema = new mongoose.Schema(
     volunteers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     managers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
-    channel: { type: mongoose.Schema.Types.ObjectId, ref: "Channel" }, // 1–1
+    channel: { type: mongoose.Schema.Types.ObjectId, ref: "Channel" },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected", "cancelled", "cancel_pending"],
       default: "pending",
     },
-    //HỦY
     cancellationReason: { type: String },
     cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     cancelledAt: { type: Date },
@@ -61,12 +60,11 @@ const eventSchema = new mongoose.Schema(
         message: "Tags must be 1-5 items",
       },
     },
-    image: { type: String }, // URL ảnh
+    image: { type: String },
   },
   { timestamps: true }
 );
 
-// Virtual: kiểm tra đã đủ người chưa
 eventSchema.virtual("isFull").get(function () {
   return this.currentParticipants >= this.maxParticipants;
 });

@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Star } from "lucide-react";
@@ -27,17 +29,16 @@ const WriteReview = ({ attendance, eventId }) => {
       })
     );
     dispatch(fetchEventFeedbacks(eventId));
-    // Reset form
+
     setRating(0);
     setComment("");
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 space-y-4">
-      <h3 className="font-bold text-gray-900">Viết đánh giá</h3>
+    <div className='bg-white p-6 rounded-2xl border border-gray-100 space-y-4'>
+      <h3 className='font-bold text-gray-900'>Viết đánh giá</h3>
 
-      {/* ⭐ Rating */}
-      <div className="flex gap-1">
+      <div className='flex gap-1'>
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
@@ -53,20 +54,18 @@ const WriteReview = ({ attendance, eventId }) => {
         ))}
       </div>
 
-      {/* 💬 Comment */}
       <textarea
         rows={4}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder="Chia sẻ cảm nhận của bạn về sự kiện..."
-        className="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500"
+        placeholder='Chia sẻ cảm nhận của bạn về sự kiện...'
+        className='w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500'
       />
 
       <button
         onClick={submitHandler}
         disabled={!rating || !comment}
-        className="bg-blue-600 text-white px-5 py-2 rounded-xl font-medium disabled:opacity-50"
-      >
+        className='bg-blue-600 text-white px-5 py-2 rounded-xl font-medium disabled:opacity-50'>
         Gửi đánh giá
       </button>
     </div>

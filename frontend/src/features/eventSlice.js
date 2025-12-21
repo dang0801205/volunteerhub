@@ -1,8 +1,7 @@
 /** @format */
 
-// src/features/event/eventSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../api"; // axios instance đã gắn token
+import api from "../api";
 
 // =============================================
 // 1. PUBLIC: Lấy danh sách sự kiện
@@ -56,16 +55,12 @@ export const fetchManagementEvents = createAsyncThunk(
 // 1c. VOLUNTEER / MANAGER: Lấy danh sách event mình tham gia (approved)
 export const fetchMyEvents = createAsyncThunk(
   "event/fetchMyEvents",
-  async (
-    { page = 1, limit = 10 } = {},
-    { rejectWithValue }
-  ) => {
+  async ({ page = 1, limit = 10 } = {}, { rejectWithValue }) => {
     try {
       const { data } = await api.get("/api/events/me", {
         params: { page, limit },
       });
 
-      console.log("🟢 MY EVENTS DATA:", data);
       return data;
     } catch (err) {
       return rejectWithValue(
@@ -74,7 +69,6 @@ export const fetchMyEvents = createAsyncThunk(
     }
   }
 );
-
 
 // 2. Lấy chi tiết 1 sự kiện (public nếu approved, private nếu pending + có quyền)
 export const fetchEventById = createAsyncThunk(
@@ -175,7 +169,6 @@ export const cancelEvent = createAsyncThunk(
       const { data } = await api.put(`/api/events/${eventId}/cancel`, {
         reason,
       });
-      // 👇 QUAN TRỌNG: Trả về data.data (object Event) để đồng bộ reducer
       return data.data;
     } catch (err) {
       return rejectWithValue(
@@ -193,7 +186,6 @@ export const requestCancelEvent = createAsyncThunk(
       const { data } = await api.put(`/api/events/${eventId}/cancel`, {
         reason,
       });
-      // 👇 QUAN TRỌNG: Trả về data.data (object Event - status đã là cancel_pending)
       return data.data;
     } catch (err) {
       return rejectWithValue(
@@ -209,7 +201,7 @@ const eventSlice = createSlice({
   name: "event",
   initialState: {
     list: [],
-    myEvents: [],    // event user tham gia
+    myEvents: [], // event user tham gia
     pagination: {
       page: 1,
       limit: 1000,
@@ -217,7 +209,6 @@ const eventSlice = createSlice({
       pages: 0,
     },
 
-    // 👇 [MỚI] State quản lý bộ lọc & sắp xếp
     filters: {
       search: "",
       tag: "",
@@ -281,7 +272,7 @@ const eventSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-      
+
     // === FETCH MY EVENTS (VOLUNTEER / MANAGER) ===
     builder
       .addCase(fetchMyEvents.pending, (state) => {
@@ -409,7 +400,6 @@ const eventSlice = createSlice({
       })
       .addCase(cancelEvent.fulfilled, (state, action) => {
         state.loading = false;
-        // 👇 Giờ payload chính là object Event -> Xử lý dễ dàng
         const cancelledEvent = action.payload;
         state.successMessage = "Đã hủy sự kiện thành công!";
 
@@ -431,7 +421,6 @@ const eventSlice = createSlice({
       })
       .addCase(requestCancelEvent.fulfilled, (state, action) => {
         state.loading = false;
-        // 👇 Giờ payload cũng là object Event -> Nhất quán
         const updatedEvent = action.payload;
         state.successMessage = "Đã gửi yêu cầu hủy thành công!";
 

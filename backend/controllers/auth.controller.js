@@ -57,7 +57,6 @@ const sendVerificationCode = async (req, res, next) => {
       return res.status(400).json({ message: "Email already registered" });
 
     const code = Math.floor(100000 + Math.random() * 900000);
-    // Save in Redis
     await saveCode(email, code);
 
     await sendVerificationEmail(email, code);
@@ -76,7 +75,6 @@ const verifyCode = async (req, res, next) => {
     if (!isValid)
       return res.status(400).json({ message: "Invalid or expired code" });
 
-    // Tạo token chứa email
     const verifyToken = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: "10m",
     });
@@ -94,7 +92,6 @@ const verifyCode = async (req, res, next) => {
 // @route  POST /api/auth/register
 // @access Public
 const register = asyncHandler(async (req, res) => {
-  // 1. Lấy thêm adminRequest từ body (Frontend đã gửi qua formData)
   const {
     userName,
     verifyToken,
@@ -124,14 +121,12 @@ const register = asyncHandler(async (req, res) => {
     throw new Error("Token không hợp lệ hoặc đã hết hạn.");
   }
 
-  // Kiểm tra email đã tồn tại
   const userExists = await User.findOne({ userEmail });
   if (userExists) {
     res.status(400);
     throw new Error("Địa chỉ email này đã được sử dụng.");
   }
 
-  // 2. Tạo User với role mặc định luôn là "volunteer" để chờ duyệt
   const user = await User.create({
     userName,
     userEmail,
@@ -155,30 +150,28 @@ const register = asyncHandler(async (req, res) => {
 
     let approvalRequest = null;
 
-if (approvalType) {
-  approvalRequest = await ApprovalRequest.create({
-    type: approvalType,
-    requestedBy: user._id,
-    status: "pending",
-    promotionData: {
-      eventsCompleted: 0,
-      averageRating: 0,
-      totalAttendanceHours: 0,
-    },
-  });
-}
+    if (approvalType) {
+      approvalRequest = await ApprovalRequest.create({
+        type: approvalType,
+        requestedBy: user._id,
+        status: "pending",
+        promotionData: {
+          eventsCompleted: 0,
+          averageRating: 0,
+          totalAttendanceHours: 0,
+        },
+      });
+    }
 
-if (approvalRequest) {
-  emitNotification(req, "admin", {
-    title: `Yêu cầu quyền ${role === "admin" ? "Admin" : "Manager"}`,
-    message: `Người dùng ${userName} yêu cầu quyền ${role} khi đăng ký.`,
-    type: role === "admin" ? "danger" : "info",
-    link: `/admin/dashboard?tab=managers&highlight=${approvalRequest._id}`,
-  });
-}
-
+    if (approvalRequest) {
+      emitNotification(req, "admin", {
+        title: `Yêu cầu quyền ${role === "admin" ? "Admin" : "Manager"}`,
+        message: `Người dùng ${userName} yêu cầu quyền ${role} khi đăng ký.`,
+        type: role === "admin" ? "danger" : "info",
+        link: `/admin/dashboard?tab=managers&highlight=${approvalRequest._id}`,
+      });
+    }
   }
-
 
   if (user) {
     const payload = {
@@ -187,7 +180,6 @@ if (approvalRequest) {
       userEmail: user.userEmail,
       role: user.role,
       token: generateToken(user._id),
-      // thông tin khác
     };
 
     res.status(201).json(payload);
@@ -225,7 +217,6 @@ const login = asyncHandler(async (req, res) => {
   }
 });
 
-// Khởi tạo Firebase Admin (làm 1 lần trong app)
 if (!admin.apps.length) {
   try {
     const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } =
@@ -262,7 +253,6 @@ const firebaseLogin = asyncHandler(async (req, res) => {
     throw new Error("Firebase ID Token is required.");
   }
 
-  // ... (giữ nguyên phần verify token) ...
   let decodedToken;
   try {
     decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -276,11 +266,9 @@ const firebaseLogin = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(404);
-    // 👇 Bây giờ dòng này sẽ trả về JSON lỗi 404 cho frontend chứ không làm sập server nữa
     throw new Error("Account not found. Please register first.");
   }
 
-  // ... (phần trả về payload giữ nguyên)
   const payload = {
     _id: user._id,
     userName: user.userName,
@@ -313,16 +301,12 @@ const forgotPassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Tạo code 6 số
   const code = Math.floor(100000 + Math.random() * 900000);
 
-  // Lưu code vào Redis (5 phút)
   await saveCode(email, code);
 
-  // Gửi email
   await sendPasswordChangeEmail(email, code);
 
-  // Tạo token chứa email
   const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
     expiresIn: "10m",
   });
@@ -352,7 +336,6 @@ const resetPassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Kiểm tra code
   const isValid = await checkCode(email, String(code));
   if (!isValid) {
     return res.status(400).json({
@@ -367,11 +350,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Update password (pre-save sẽ hash)
   user.password = newPassword;
   await user.save();
 
-  // Login luôn
   const payload = {
     _id: user._id,
     userName: user.userName,

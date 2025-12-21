@@ -10,8 +10,6 @@ export const registerUser = createAsyncThunk(
       // Backend: POST /api/auth/register
       const { data } = await api.post("/api/auth/register", userData);
 
-      // Backend trả về: { _id, userName, ..., token }
-      // Lưu token luôn để đăng ký xong là đăng nhập luôn
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
@@ -22,23 +20,20 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// 2. ĐĂNG NHẬP (Thường)
+// 2. ĐĂNG NHẬP
 export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ userEmail, password }, { rejectWithValue }) => {
     try {
-      // Backend mong đợi "userEmail", không phải "email"
       const { data } = await api.post("/api/auth/login", {
         userEmail,
         password,
       });
 
-      // Backend trả về field là 'token'
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
 
-      // Data chính là user info luôn, không cần .user
       return data;
     } catch (err) {
       return rejectWithValue(
@@ -48,7 +43,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// 3. ĐĂNG NHẬP FIREBASE (Bổ sung cho đủ với Backend)
+// 3. ĐĂNG NHẬP FIREBASE
 export const firebaseLoginUser = createAsyncThunk(
   "auth/firebaseLogin",
   async (idToken, { rejectWithValue }) => {
@@ -67,7 +62,7 @@ export const firebaseLoginUser = createAsyncThunk(
   }
 );
 
-// 4. LẤY PROFILE HIỆN TẠI (Khi F5 trang)
+// 4. LẤY PROFILE HIỆN TẠI
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
@@ -88,9 +83,7 @@ export const fetchCurrentUser = createAsyncThunk(
 
 // 5. ĐĂNG XUẤT
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
-  // Vì Backend chưa có API logout và dùng JWT stateless -> Chỉ cần xóa ở client
   localStorage.removeItem("token");
-  // localStorage.removeItem("refreshToken"); // Backend bạn chưa có refreshToken nên tạm bỏ
   return null;
 });
 
@@ -99,7 +92,7 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null, // Chứa: { _id, userName, email, phoneNumber, role, biology, ... }
+    user: null,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -111,14 +104,13 @@ const authSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
-    // Action để update user info từ các nơi khác (như trang UserProfile)
+
     updateUserInfo: (state, action) => {
       state.user = { ...state.user, ...action.payload };
     },
   },
 
   extraReducers: (builder) => {
-    // --- REGISTER ---
     builder
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -127,7 +119,7 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = "Đăng ký thành công!";
-        // Nếu muốn đăng ký xong tự login luôn:
+
         state.isAuthenticated = true;
         state.user = action.payload;
       })

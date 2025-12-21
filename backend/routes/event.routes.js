@@ -27,10 +27,6 @@ import { canModifyEvent } from "../middlewares/event.middleware.js";
 
 const router = express.Router();
 
-// ============================================================
-// 1. STATIC ROUTES (Phải đặt lên đầu để tránh trùng với :eventId)
-// ============================================================
-
 // Public: Lấy danh sách sự kiện (Home page)
 router.get("/", getEvents);
 
@@ -43,15 +39,9 @@ router.get("/management", protect, allowAdminOrManager, getAllEvents);
 // Manager: Tạo sự kiện mới
 router.post("/", protect, allowAdminOrManager, createEvent);
 
-// ============================================================
-// 2. DYNAMIC ROUTES (Có tham số :eventId)
-// ============================================================
-
 // --- PUBLIC ---
 router.get("/:eventId", getEventById);
 router.get("/:eventId/rating", getEventPublicRating);
-
-// --- MANAGER / ADMIN ACTIONS ---
 
 // Cập nhật thông tin (Chỉ Manager sở hữu hoặc Admin)
 router.put(
@@ -76,8 +66,6 @@ router.get("/:eventId/feedbacks", protect, getEventFeedbacks);
 
 // Lấy danh sách đăng ký
 router.get("/:eventId/registrations", protect, getEventRegistrations);
-
-// --- SPECIFIC ACTIONS (DUYỆT & HỦY) ---
 
 // Admin: Duyệt hoặc Từ chối sự kiện
 router.patch("/:eventId/approve", protect, allowAdminOnly, approveEvent);

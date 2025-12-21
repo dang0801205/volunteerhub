@@ -64,9 +64,8 @@ import { ToastContainer } from "../../components/common/Toast";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import PromptModal from "../../components/common/PromptModal";
 import PotentialManagerList from "../../components/approvals/PotentialManagerList";
-// NEW COMPONENTS
 import RegistrationManagementTable from "../../components/registrations/RegistrationManagementTable";
-import EventManagementTable from "../../components/events/EventManagementTable"; // Component mới cập nhật
+import EventManagementTable from "../../components/events/EventManagementTable";
 import UserManagementTable from "../../components/users/UserManagementTable";
 //import { useNavigate } from "react-router-dom";
 const StatCard = ({ title, value, change, icon, color }) => {
@@ -94,8 +93,7 @@ const StatCard = ({ title, value, change, icon, color }) => {
 
 const AdminDashboard = ({ user }) => {
   const dispatch = useDispatch();
-  //const navigate = useNavigate();
-  // Redux State
+
   const {
     list: allEvents = [],
     successMessage: eventSuccessMessage,
@@ -124,13 +122,13 @@ const AdminDashboard = ({ user }) => {
   console.log("Pending Requests:", pendingRequests);
 
   // Filter Requests
-const pendingManagerRequests = pendingRequests.filter(
-  (req) => req.type === "manager_promotion"
-);
+  const pendingManagerRequests = pendingRequests.filter(
+    (req) => req.type === "manager_promotion"
+  );
 
-const pendingAdminRequests = pendingRequests.filter(
-  (req) => req.type === "admin_promotion"
-);
+  const pendingAdminRequests = pendingRequests.filter(
+    (req) => req.type === "admin_promotion"
+  );
   const pendingCancelRequests = pendingRequests.filter(
     (req) => req.type === "event_cancellation"
   );
@@ -198,7 +196,7 @@ const pendingAdminRequests = pendingRequests.filter(
   // Hàm chuyển tab đồng bộ URL
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    clearParams(tabId); // Xóa sạch các tham số rác trên URL
+    clearParams(tabId);
   };
   // Effects
   useEffect(() => {
@@ -291,8 +289,6 @@ const pendingAdminRequests = pendingRequests.filter(
     //navigate(`/events/${event._id}`);
   };
 
-  // --- EVENT ACTIONS (Duyệt/Từ chối Event Mới & Xóa/Hủy Event Cũ) ---
-
   const handleApproveEvent = (event) => {
     setConfirmModal({
       isOpen: true,
@@ -353,7 +349,7 @@ const pendingAdminRequests = pendingRequests.filter(
     });
   };
 
-  // Admin Force Cancel (Hủy trực tiếp sự kiện đang chạy)
+  // Admin Force Cancel
   const handleAdminForceCancel = (event) => {
     setConfirmModal({
       isOpen: true,
@@ -379,7 +375,6 @@ const pendingAdminRequests = pendingRequests.filter(
       confirmText: "Xác nhận Hủy",
       onConfirm: async () => {
         try {
-          // Gọi API requestCancel nhưng với role Admin nó sẽ hủy luôn
           await dispatch(
             requestCancelEvent({
               eventId: event._id,
@@ -395,8 +390,6 @@ const pendingAdminRequests = pendingRequests.filter(
       },
     });
   };
-
-  // --- CANCEL REQUEST ACTIONS (Xử lý yêu cầu hủy từ Manager) ---
 
   const handleApproveCancellation = (req) => {
     setConfirmModal({
@@ -448,13 +441,10 @@ const pendingAdminRequests = pendingRequests.filter(
     });
   };
   const handleViewCancelRequest = (req) => {
-    setSelectedManagerRequest(req); // Tái sử dụng ManagerApprovalModal
+    setSelectedManagerRequest(req);
   };
 
-  // --- OTHER ACTIONS (User/Manager/Reg) ---
-
   const handleRecommendManager = (user) => {
-    /* ... giữ nguyên ... */
     setConfirmModal({
       isOpen: true,
       title: "Đề cử thăng cấp Manager",
@@ -678,7 +668,6 @@ const pendingAdminRequests = pendingRequests.filter(
                 icon={Bell}
                 color='bg-red-500'
               />
-
             </div>
           )}
 
@@ -690,9 +679,9 @@ const pendingAdminRequests = pendingRequests.filter(
                 {[
                   { id: "overview", label: "Tổng quan" },
                   {
-                    id: "events_management", // Tab này giờ là chính cho cả Duyệt và Quản lý
+                    id: "events_management",
                     label: "Quản lý sự kiện",
-                    // Count bao gồm: Sự kiện chờ duyệt + Yêu cầu hủy
+
                     count:
                       pendingNewEvents.length + pendingCancelRequests.length,
                     color: "amber",
@@ -709,7 +698,7 @@ const pendingAdminRequests = pendingRequests.filter(
                     count: pendingManagerRequests.length,
                     color: "purple",
                   },
-                                    {
+                  {
                     id: "admins",
                     label: "Duyệt Admin",
                     count: pendingAdminRequests.length,
@@ -810,20 +799,18 @@ const pendingAdminRequests = pendingRequests.filter(
               {/* === TAB QUẢN LÝ SỰ KIỆN (ALL-IN-ONE) === */}
               {activeTab === "events_management" && (
                 <EventManagementTable
-                  events={allEvents} // Truyền toàn bộ sự kiện
+                  events={allEvents}
                   registrations={pendingRegistrations}
-                  // Props cho phần Cancel Request (Khối màu đỏ)
                   cancelRequests={pendingCancelRequests}
                   highlightedId={highlightId}
                   onViewCancelRequest={handleViewCancelRequest}
                   onApproveCancellation={handleApproveCancellation}
                   onRejectCancellation={handleRejectCancellation}
-                  // Props cho phần Event List (Các nút hành động)
-                  onApprove={handleApproveEvent} // Duyệt sự kiện mới
-                  onReject={handleRejectEvent} // Từ chối sự kiện mới
-                  onCancelEvent={handleAdminForceCancel} // Hủy sự kiện đang chạy
-                  onDeleteEvent={handleDeleteEvent} // Xóa sự kiện
-                  onViewEvent={handleViewEvent} // Xem chi tiết
+                  onApprove={handleApproveEvent}
+                  onReject={handleRejectEvent}
+                  onCancelEvent={handleAdminForceCancel}
+                  onDeleteEvent={handleDeleteEvent}
+                  onViewEvent={handleViewEvent}
                 />
               )}
 
@@ -850,7 +837,6 @@ const pendingAdminRequests = pendingRequests.filter(
                   ) : (
                     pendingManagerRequests.map((req) => {
                       const isHighlighted = req._id === highlightId;
-                      // 1. Phân loại: Nếu eventsCompleted = 0 hoặc không có promotionData là đăng ký mới
                       const isNewRegistration =
                         !req.promotionData ||
                         (req.promotionData.eventsCompleted || 0) === 0;
@@ -867,7 +853,6 @@ const pendingAdminRequests = pendingRequests.filter(
                               ? "ring-2 ring-purple-500 shadow-md z-10 relative"
                               : "hover:shadow-md"
                           } ${
-                            // 2. THAY ĐỔI MÀU NỀN THEO LOẠI ĐĂNG KÝ
                             isNewRegistration
                               ? isHighlighted
                                 ? "bg-blue-100/60 border-blue-300"
@@ -877,7 +862,6 @@ const pendingAdminRequests = pendingRequests.filter(
                               : "bg-white border-gray-200"
                           }`}>
                           <div className='flex items-center gap-4'>
-                            {/* Avatar với Badge "New" */}
                             <div className='relative'>
                               <div
                                 className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${
@@ -902,7 +886,6 @@ const pendingAdminRequests = pendingRequests.filter(
                                   </div>
                                 )}
                               </div>
-                              {/* 3. HIỂN THỊ BADGE NEW CHO TÀI KHOẢN MỚI */}
                               {isNewRegistration && (
                                 <span
                                   className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
@@ -980,73 +963,72 @@ const pendingAdminRequests = pendingRequests.filter(
               )}
 
               {/* === TAB DUYỆT ADMIN === */}
-{activeTab === "admins" && (
-  <div className="space-y-4">
-    {pendingAdminRequests.length === 0 ? (
-      <div className="text-center py-12 text-gray-500">
-        Không có yêu cầu Admin nào đang chờ duyệt.
-      </div>
-    ) : (
-      pendingAdminRequests.map((req) => {
-        const isHighlighted = req._id === highlightId;
+              {activeTab === "admins" && (
+                <div className='space-y-4'>
+                  {pendingAdminRequests.length === 0 ? (
+                    <div className='text-center py-12 text-gray-500'>
+                      Không có yêu cầu Admin nào đang chờ duyệt.
+                    </div>
+                  ) : (
+                    pendingAdminRequests.map((req) => {
+                      const isHighlighted = req._id === highlightId;
 
-        return (
-          <div
-            key={req._id}
-            id={`admin-req-${req._id}`}
-            className={`rounded-xl border p-5 flex items-center justify-between transition-all
-              ${isHighlighted
-                ? "ring-2 ring-red-500 bg-red-50 border-red-300 shadow-md"
-                : "bg-white border-gray-200 hover:shadow-md"}
-            `}
-          >
-            <div className="flex items-center gap-4">
-              {/* Avatar */}
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-red-500">
-                {req.requestedBy?.profilePicture ? (
-                  <img
-                    src={req.requestedBy.profilePicture}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-red-100 text-red-700 font-bold">
-                    {req.requestedBy?.userName?.[0] || "U"}
-                  </div>
-                )}
-              </div>
+                      return (
+                        <div
+                          key={req._id}
+                          id={`admin-req-${req._id}`}
+                          className={`rounded-xl border p-5 flex items-center justify-between transition-all
+              ${
+                isHighlighted
+                  ? "ring-2 ring-red-500 bg-red-50 border-red-300 shadow-md"
+                  : "bg-white border-gray-200 hover:shadow-md"
+              }
+            `}>
+                          <div className='flex items-center gap-4'>
+                            {/* Avatar */}
+                            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-red-500'>
+                              {req.requestedBy?.profilePicture ? (
+                                <img
+                                  src={req.requestedBy.profilePicture}
+                                  alt=''
+                                  className='w-full h-full object-cover'
+                                />
+                              ) : (
+                                <div className='w-full h-full flex items-center justify-center bg-red-100 text-red-700 font-bold'>
+                                  {req.requestedBy?.userName?.[0] || "U"}
+                                </div>
+                              )}
+                            </div>
 
-              <div>
-                <p className="font-bold text-gray-900 flex items-center gap-2">
-                  {req.requestedBy?.userName}
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-200">
-                    YÊU CẦU ADMIN
-                  </span>
-                </p>
+                            <div>
+                              <p className='font-bold text-gray-900 flex items-center gap-2'>
+                                {req.requestedBy?.userName}
+                                <span className='px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-200'>
+                                  YÊU CẦU ADMIN
+                                </span>
+                              </p>
 
-                <p className="text-sm text-gray-600">
-                  Email: {req.requestedBy?.userEmail}
-                </p>
+                              <p className='text-sm text-gray-600'>
+                                Email: {req.requestedBy?.userEmail}
+                              </p>
 
-                <p className="text-xs text-red-600 font-semibold mt-1">
-                  ⚠ Quyền cao nhất – cần xem xét kỹ
-                </p>
-              </div>
-            </div>
+                              <p className='text-xs text-red-600 font-semibold mt-1'>
+                                ⚠ Quyền cao nhất – cần xem xét kỹ
+                              </p>
+                            </div>
+                          </div>
 
-            <button
-              onClick={() => setSelectedManagerRequest(req)}
-              className="px-4 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition"
-            >
-              Xem & Quyết định
-            </button>
-          </div>
-        );
-      })
-    )}
-  </div>
-)}
-
+                          <button
+                            onClick={() => setSelectedManagerRequest(req)}
+                            className='px-4 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition'>
+                            Xem & Quyết định
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
 
               {activeTab === "users_management" && (
                 <UserManagementTable
@@ -1070,8 +1052,6 @@ const pendingAdminRequests = pendingRequests.filter(
         </div>
       </div>
 
-      {/* Modals */}
-      {/* ... (Các modal giữ nguyên như cũ) ... */}
       {selectedRegistration && (
         <VolunteerApprovalModal
           registration={selectedRegistration}
@@ -1085,28 +1065,21 @@ const pendingAdminRequests = pendingRequests.filter(
         <ManagerApprovalModal
           request={selectedManagerRequest}
           onClose={() => setSelectedManagerRequest(null)}
-          // onApprove={handleApproveManager}
-          // onReject={handleRejectManager}
           onApprove={(req) => {
             if (req.type === "event_cancellation") {
-              // Nếu là yêu cầu hủy sự kiện -> Gọi hàm duyệt hủy
               handleApproveCancellation(req);
-              setSelectedManagerRequest(null); // Đóng modal sau khi gọi confirm
+              setSelectedManagerRequest(null);
             } else {
-              // Nếu là yêu cầu thăng cấp Manager -> Gọi logic cũ
               handleApproveManager(req);
             }
           }}
           onReject={(req, action, note) => {
             if (req.type === "event_cancellation") {
-              // Nếu từ chối hủy -> Gọi API reject kèm lý do (note)
-              // Lưu ý: handleRejectCancellation dùng PromptModal,
-              // nhưng ở đây ta đã có note từ ManagerApprovalModal nên gọi thẳng API luôn
               dispatch(
                 processApprovalRequest({
                   requestId: req._id,
                   actionType: "reject",
-                  adminNote: note, // Note nhập từ modal
+                  adminNote: note,
                 })
               ).unwrap();
               dispatch(fetchPendingApprovals());

@@ -37,7 +37,6 @@ const formatFullDate = (dateStr) => {
   }).format(date);
 };
 
-// --- Upcoming Events ---
 export const UpcomingEventsList = ({ events }) => {
   return (
     <motion.div

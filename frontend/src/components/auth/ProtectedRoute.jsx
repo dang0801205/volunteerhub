@@ -1,21 +1,27 @@
-  import { Navigate, Outlet } from "react-router-dom";
+/** @format */
 
-  const ProtectedRoute = ({ user, loading, requiredRole, redirectTo = "/", children }) => {
-    // Show nothing while loading user data
-    if (loading) {
-      return null; // or a loading spinner
-    }
+import { Navigate, Outlet } from "react-router-dom";
 
-    if (!user) {
-      return <Navigate to={redirectTo} replace />;
-    }
+const ProtectedRoute = ({
+  user,
+  loading,
+  requiredRole,
+  redirectTo = "/",
+  children,
+}) => {
+  if (loading) {
+    return null;
+  }
 
-    if (requiredRole && user.role !== requiredRole) {
-      return <Navigate to={redirectTo} replace />;
-    }
+  if (!user) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
-    // Support both wrapper usage (<ProtectedRoute>{...}</ProtectedRoute>) and route nesting with <Outlet />
-    return children ? children : <Outlet />;
-  };
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
-  export default ProtectedRoute;
+  return children ? children : <Outlet />;
+};
+
+export default ProtectedRoute;

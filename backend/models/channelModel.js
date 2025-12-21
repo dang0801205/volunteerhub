@@ -4,8 +4,8 @@ import mongoose from "mongoose";
 
 const channelSchema = new mongoose.Schema(
   {
-    event: { type: mongoose.Schema.Types.ObjectId, ref: "Event" }, // 1–1
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }], // 1–N
+    event: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   },
   { timestamps: true }
 );

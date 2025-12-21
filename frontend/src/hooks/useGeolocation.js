@@ -1,18 +1,7 @@
-/**
- * @file useGeolocation.js
- * @description Custom hook for geolocation operations
- * @pattern Custom Hook Pattern
- */
+/** @format */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
-/**
- * Get user's current geolocation
- * @returns {Object} Geolocation state
- * @returns {Object|null} location - Current location {lat, lng}
- * @returns {boolean} loading - Loading state
- * @returns {string|null} error - Error message if any
- */
 export const useGeolocation = () => {
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +9,7 @@ export const useGeolocation = () => {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported');
+      setError("Geolocation is not supported");
       setLoading(false);
       return;
     }

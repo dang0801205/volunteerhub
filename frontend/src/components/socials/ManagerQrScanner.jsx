@@ -45,10 +45,8 @@ function ManagerQrScanner({ eventId, onScanSuccess, onScanError }) {
             aspectRatio: 1,
           },
           (decodedText) => {
-            // 🚫 đang lock → bỏ qua
             if (lockRef.current) return;
 
-            // 🚫 trùng QR vừa quét → bỏ qua
             if (decodedText === lastTokenRef.current) return;
 
             console.log("✅ QR decoded:", decodedText);
@@ -60,7 +58,6 @@ function ManagerQrScanner({ eventId, onScanSuccess, onScanError }) {
 
             dispatch(fetchChannelByEventId(eventId));
 
-            // ⏳ mở khóa sau 2s để quét tiếp
             setTimeout(() => {
               lockRef.current = false;
             }, 2000);
@@ -95,7 +92,4 @@ function ManagerQrScanner({ eventId, onScanSuccess, onScanError }) {
   );
 }
 
-export default React.memo(
-  ManagerQrScanner,
-  () => true // không cho re-render
-);
+export default React.memo(ManagerQrScanner, () => true);

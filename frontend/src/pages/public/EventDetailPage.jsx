@@ -53,9 +53,9 @@ const EventDetail = () => {
     return getEventTimeStatus(start, end);
   }, [event]);
 
-  const isExpired = timeStatus === "EXPIRED";
-  const isFull =
-    (event.currentParticipants ?? 0) >= (event.maxParticipants ?? 0);
+  // const isExpired = timeStatus === "EXPIRED";
+  // const isFull =
+  //   (event.currentParticipants ?? 0) >= (event.maxParticipants ?? 0);
 
   const addToast = (message, type = "success") => {
     const id = Date.now();
@@ -110,6 +110,9 @@ const EventDetail = () => {
   }, [event]);
 
   // Lọc danh sách đã được duyệt
+  const isExpired = timeStatus === "EXPIRED";
+  const isFull =
+    (event.currentParticipants ?? 0) >= (event.maxParticipants ?? 0);
   const approvedVolunteers = registrations;
 
   // --- RENDER HELPERS ---

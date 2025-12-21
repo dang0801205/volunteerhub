@@ -1,8 +1,8 @@
 /**
  * @format
- * @param {Object} req - Đối tượng request từ express (chứa req.io)
- * @param {String} room - ID người nhận hoặc "admin"
- * @param {Object} data - Nội dung thông báo { title, message, type, link }
+ * @param {Object} req
+ * @param {String} room
+ * @param {Object} data
  */
 
 export const emitNotification = (req, room, data) => {

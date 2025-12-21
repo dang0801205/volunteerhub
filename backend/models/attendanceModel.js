@@ -33,7 +33,7 @@ const attendanceSchema = new mongoose.Schema(
     checkOut: { type: Date },
     status: {
       type: String,
-      enum: ["in-progress", "completed", "absent"], //khi checkout -> completed
+      enum: ["in-progress", "completed", "absent"],
       default: "in-progress",
     },
     feedback: {

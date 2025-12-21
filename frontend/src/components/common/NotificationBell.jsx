@@ -398,22 +398,21 @@ const NotificationBell = ({ user }) => {
       const rect = btn.getBoundingClientRect();
 
       // dropdown canh phải theo nút chuông
-      const top = rect.bottom + 12 + window.scrollY; // mt-3 tương đương 12px
-      const left = rect.right + window.scrollX; // dùng right để canh phải
+      const top = rect.bottom + 12 + window.scrollY;
+      const left = rect.right + window.scrollX;
       setDropdownPos({ top, left, width: rect.width });
     };
 
     updatePos();
 
     window.addEventListener("resize", updatePos);
-    window.addEventListener("scroll", updatePos, true); // true để bắt scroll ở parent
+    window.addEventListener("scroll", updatePos, true);
     return () => {
       window.removeEventListener("resize", updatePos);
       window.removeEventListener("scroll", updatePos, true);
     };
   }, [isOpen]);
 
-  // --- click outside (dùng portal vẫn ok vì ref dropdownRef) ---
   useEffect(() => {
     function handleClickOutside(event) {
       const drop = dropdownRef.current;
@@ -428,7 +427,6 @@ const NotificationBell = ({ user }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ----- UI -----
   const BellButton = (
     <div
       ref={buttonRef}
@@ -448,13 +446,12 @@ const NotificationBell = ({ user }) => {
   const Dropdown = isOpen ? (
     <div
       ref={dropdownRef}
-      // ✅ Portal dropdown: fixed position by absolute document coordinates
       style={{
         position: "absolute",
         top: dropdownPos.top,
         left: dropdownPos.left,
-        transform: "translateX(-100%)", // canh phải theo nút
-        zIndex: 999999, // ✅ cực cao để đè mọi thứ
+        transform: "translateX(-100%)",
+        zIndex: 999999,
       }}
       className='w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden'>
       <div className='px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center'>
@@ -553,7 +550,6 @@ const NotificationBell = ({ user }) => {
     <div className='relative'>
       {BellButton}
 
-      {/* ✅ Render dropdown lên body để luôn nổi trên cùng */}
       {isOpen && createPortal(Dropdown, document.body)}
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
@@ -561,7 +557,6 @@ const NotificationBell = ({ user }) => {
   );
 };
 
-// --- HELPER ICONS (GIỮ NGUYÊN) ---
 const CalendarIcon = ({ className }) => (
   <svg
     width='24'

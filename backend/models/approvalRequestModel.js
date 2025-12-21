@@ -7,7 +7,12 @@ const approvalRequestSchema = new mongoose.Schema(
     // 1. TRƯỜNG LOẠI YÊU CẦU (BẮT BUỘC)
     type: {
       type: String,
-      enum: ["event_approval", "manager_promotion", "admin_promotion", "event_cancellation"],
+      enum: [
+        "event_approval",
+        "manager_promotion",
+        "admin_promotion",
+        "event_cancellation",
+      ],
       required: true,
       default: "event_approval",
     },

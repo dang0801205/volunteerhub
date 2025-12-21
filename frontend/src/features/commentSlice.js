@@ -2,9 +2,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// ================================
 // CREATE COMMENT
-// ================================
 export const createComment = createAsyncThunk(
   "comments/createComment",
   async (formData, { rejectWithValue }) => {
@@ -19,9 +17,7 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// ================================
 // GET COMMENTS BY POST
-// ================================
 export const getCommentsByPost = createAsyncThunk(
   "comments/getCommentsByPost",
   async (postId, { rejectWithValue }) => {
@@ -34,9 +30,7 @@ export const getCommentsByPost = createAsyncThunk(
   }
 );
 
-// ================================
 // UPDATE COMMENT
-// ================================
 export const updateComment = createAsyncThunk(
   "comments/updateComment",
   async ({ id, formData }, { rejectWithValue }) => {
@@ -51,9 +45,7 @@ export const updateComment = createAsyncThunk(
   }
 );
 
-// ================================
 // DELETE COMMENT
-// ================================
 export const deleteComment = createAsyncThunk(
   "comments/deleteComment",
   async (id, { rejectWithValue }) => {
@@ -66,13 +58,12 @@ export const deleteComment = createAsyncThunk(
   }
 );
 
-// ================================
 // SLICE
-// ================================
+
 const commentSlice = createSlice({
   name: "comments",
   initialState: {
-    commentsByPost: {}, // { postId: [comments] }
+    commentsByPost: {},
     loading: false,
     error: null,
   },

@@ -39,7 +39,6 @@ const UserDetailModal = ({
   );
   const { profile } = useSelector((state) => state.user);
 
-  // 1. Hòa trộn dữ liệu: Giữ lại promotionData từ danh sách Potential
   const displayUser = useMemo(() => {
     const base = selectedUser || viewingUser || {};
     return {
@@ -48,11 +47,9 @@ const UserDetailModal = ({
     };
   }, [selectedUser, viewingUser]);
 
-  // 2. Logic thống kê: Sử dụng promotionData từ Backend nếu có
   const stats = useMemo(() => {
     const pData = displayUser?.promotionData;
 
-    // Ưu tiên dùng dữ liệu tính sẵn từ Backend (Gợi ý Manager/Duyệt Manager)
     if (pData) {
       return {
         hours: pData.totalAttendanceHours || 0,
@@ -60,7 +57,6 @@ const UserDetailModal = ({
       };
     }
 
-    // Dự phòng: Tự tính từ history nếu mở từ danh sách User thông thường
     const history = displayUser?.history || [];
     const completed = history.filter((h) => h.status === "completed");
     const totalMs = completed.reduce((sum, record) => {
@@ -91,11 +87,8 @@ const UserDetailModal = ({
     };
   }, [dispatch, userId]);
 
-  // ✅ ĐÃ XÓA BIẾN calculatedTotalHours DƯ THỪA ĐỂ HẾT LỖI 'NEVER USED'
-
   if (!viewingUser) return null;
 
-  // --- HANDLERS ---
   const handleToggleLock = () => {
     if (!displayUser?._id) return;
     const isActive = displayUser.status === "active";

@@ -30,12 +30,11 @@ const getPendingRequests = asyncHandler(async (req, res) => {
 const approveRequest = asyncHandler(async (req, res) => {
   const { adminNote } = req.body;
 
-  // 1. Phải populate "event" ngay từ đầu để lấy thông tin title
   const request = await ApprovalRequest.findById(req.params.id).populate(
     "event"
   );
 
-  console.log("Admin Note:", adminNote);  
+  console.log("Admin Note:", adminNote);
   console.log("Approval Request to approve:", request);
 
   if (!request || request.status !== "pending") {
@@ -43,15 +42,12 @@ const approveRequest = asyncHandler(async (req, res) => {
     throw new Error("Yêu cầu không tồn tại hoặc đã xử lý");
   }
 
-  // --- LOGIC XỬ LÝ THEO LOẠI YÊU CẦU ---
   if (request.type === "event_approval") {
-    // 1️⃣ DUYỆT ĐĂNG SỰ KIỆN MỚI
     if (!request.event) {
       res.status(400);
       throw new Error("Không tìm thấy Event ID trong yêu cầu.");
     }
 
-    // Cập nhật trạng thái event
     const event = await Event.findByIdAndUpdate(
       request.event,
       { status: "approved" },
@@ -63,7 +59,6 @@ const approveRequest = asyncHandler(async (req, res) => {
       throw new Error("Event không tồn tại.");
     }
 
-    // 2️⃣ TẠO CHANNEL NẾU CHƯA CÓ
     let channel = await Channel.findOne({ event: event._id });
 
     if (!channel) {
@@ -72,21 +67,18 @@ const approveRequest = asyncHandler(async (req, res) => {
         posts: [],
       });
 
-      // Gắn channel vào event (nếu có field channel)
       event.channel = channel._id;
       await event.save();
     }
-
   } else if (request.type === "manager_promotion") {
     // Kiểm tra trong lý do để cấp đúng quyền Admin hoặc Manager
-    // const isTargetAdmin = request.reason?.toLowerCase().includes("admin");
     console.log("Promoting user to Manager/Admin:", request.requestedBy);
     console.log("Request Reason:", request.reason);
     await User.findByIdAndUpdate(request.requestedBy, {
       role: "manager",
     });
   } else if (request.type === "admin_promotion") {
-        console.log("Request Reason:", request.reason);
+    console.log("Request Reason:", request.reason);
 
     await User.findByIdAndUpdate(request.requestedBy, {
       role: "admin",
@@ -113,8 +105,6 @@ const approveRequest = asyncHandler(async (req, res) => {
       },
       { status: "event_cancelled" }
     );
-
-    // ✅ ĐƯA LOGIC THÔNG BÁO TỔNG VÀO ĐÂY (Chỉ chạy khi hủy sự kiện)
     const registrations = await Registration.find({
       eventId: request.event?._id,
     }).select("userId");
@@ -142,7 +132,6 @@ const approveRequest = asyncHandler(async (req, res) => {
   request.adminNote = adminNote || "Đã duyệt";
   await request.save();
 
-  // 3. CHUẨN HÓA THÔNG BÁO GỬI NGƯỜI YÊU CẦU (Dựa trên notificationData)
   let notificationData = {
     type: "success",
     id: request._id,
@@ -165,7 +154,6 @@ const approveRequest = asyncHandler(async (req, res) => {
     notificationData.link = "/dashboard";
   }
 
-  // ✅ GỬI THÔNG BÁO CHÍNH XÁC (Dùng dữ liệu đã chuẩn bị ở bước 3)
   emitNotification(req, request.requestedBy.toString(), notificationData);
 
   res.json({
@@ -212,7 +200,7 @@ const rejectRequest = asyncHandler(async (req, res) => {
     notificationData.title = "Yêu cầu thăng cấp bị từ chối";
     notificationData.message = `Rất tiếc, yêu cầu làm Admin của bạn chưa được duyệt. Lý do: ${adminNote}`;
     notificationData.link = "/information";
-  }else if (request.type === "event_approval") {
+  } else if (request.type === "event_approval") {
     notificationData.title = "Từ chối đăng sự kiện";
     notificationData.message = `Sự kiện "${request.event?.title}" bị từ chối đăng. Lý do: ${adminNote}`;
     notificationData.link = "/dashboard";

@@ -24,8 +24,8 @@ const EventChannel = ({ eventId, user }) => {
   );
 
   const [newPostContent, setNewPostContent] = useState("");
-  const [commentInputs, setCommentInputs] = useState({}); // { postId: content }
-  const [expandedComments, setExpandedComments] = useState({}); // { postId: true/false }
+  const [commentInputs, setCommentInputs] = useState({});
+  const [expandedComments, setExpandedComments] = useState({});
 
   const loadChannel = useCallback(() => {
     if (eventId) {

@@ -1,11 +1,10 @@
-// src/redux/slices/postSlice.js
+/** @format */
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// ======================================================
 // 1. ADMIN GET ALL POSTS
-// ======================================================
+
 export const fetchAllPosts = createAsyncThunk(
   "posts/fetchAllPosts",
   async (_, { rejectWithValue }) => {
@@ -13,14 +12,15 @@ export const fetchAllPosts = createAsyncThunk(
       const res = await axios.get("/api/post/all-posts");
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error fetching posts");
+      return rejectWithValue(
+        err.response?.data?.message || "Error fetching posts"
+      );
     }
   }
 );
 
-// ======================================================
 // 2. GET POSTS BY CHANNEL
-// ======================================================
+
 export const fetchPostsByChannel = createAsyncThunk(
   "posts/fetchPostsByChannel",
   async (channelId, { rejectWithValue }) => {
@@ -28,14 +28,15 @@ export const fetchPostsByChannel = createAsyncThunk(
       const res = await axios.get(`/api/post/${channelId}/posts`);
       return { channelId, posts: res.data };
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error fetching channel posts");
+      return rejectWithValue(
+        err.response?.data?.message || "Error fetching channel posts"
+      );
     }
   }
 );
 
-// ======================================================
 // 3. CREATE POST  (content + optional image)
-// ======================================================
+
 export const createPost = createAsyncThunk(
   "posts/createPost",
   async (data, { rejectWithValue }) => {
@@ -54,14 +55,14 @@ export const createPost = createAsyncThunk(
 
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error creating post");
+      return rejectWithValue(
+        err.response?.data?.message || "Error creating post"
+      );
     }
   }
 );
 
-// ======================================================
 // 4. UPDATE POST (owner only)
-// ======================================================
 export const updatePost = createAsyncThunk(
   "posts/updatePost",
   async ({ id, content, image }, { rejectWithValue }) => {
@@ -79,34 +80,34 @@ export const updatePost = createAsyncThunk(
 
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error updating post");
+      return rejectWithValue(
+        err.response?.data?.message || "Error updating post"
+      );
     }
   }
 );
 
-// ======================================================
 // 5. DELETE POST (soft delete)
-// ======================================================
 export const deletePost = createAsyncThunk(
   "posts/deletePost",
   async (id, { rejectWithValue }) => {
     try {
       await axios.delete(`/api/post/${id}`);
-      return id; // return deleted id
+      return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error deleting post");
+      return rejectWithValue(
+        err.response?.data?.message || "Error deleting post"
+      );
     }
   }
 );
 
-// ======================================================
 // SLICE
-// ======================================================
 const postSlice = createSlice({
   name: "posts",
   initialState: {
-    allPosts: [],        // admin
-    channelPosts: {},     // {channelId: [...]}
+    allPosts: [],
+    channelPosts: {},
     loading: false,
     error: null,
   },
@@ -115,14 +116,12 @@ const postSlice = createSlice({
     clearPosts(state) {
       state.channelPosts = {};
       state.allPosts = [];
-    }
+    },
   },
 
   extraReducers: (builder) => {
     builder
-      // =============================
       // FETCH ALL POSTS (ADMIN)
-      // =============================
       .addCase(fetchAllPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -136,9 +135,7 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
-      // =============================
       // FETCH POSTS BY CHANNEL
-      // =============================
       .addCase(fetchPostsByChannel.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -152,9 +149,7 @@ const postSlice = createSlice({
         state.error = action.payload;
       })
 
-      // =============================
       // CREATE POST
-      // =============================
       .addCase(createPost.fulfilled, (state, action) => {
         const post = action.payload;
         if (post.channel) {
@@ -165,29 +160,25 @@ const postSlice = createSlice({
         }
       })
 
-      // =============================
       // UPDATE POST
-      // =============================
       .addCase(updatePost.fulfilled, (state, action) => {
         const updated = action.payload;
         const channelId = updated.channel;
 
         if (state.channelPosts[channelId]) {
-          state.channelPosts[channelId] = state.channelPosts[channelId].map(p =>
-            p._id === updated._id ? updated : p
+          state.channelPosts[channelId] = state.channelPosts[channelId].map(
+            (p) => (p._id === updated._id ? updated : p)
           );
         }
       })
 
-      // =============================
       // DELETE POST
-      // =============================
       .addCase(deletePost.fulfilled, (state, action) => {
         const deletedId = action.payload;
 
         for (const channelId in state.channelPosts) {
           state.channelPosts[channelId] = state.channelPosts[channelId].filter(
-            p => p._id !== deletedId
+            (p) => p._id !== deletedId
           );
         }
       });

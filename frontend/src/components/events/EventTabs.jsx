@@ -1,7 +1,14 @@
 /** @format */
 
 import React from "react";
-import { MessageSquare, Info, Users, ImageIcon, Star, QrCodeIcon } from "lucide-react";
+import {
+  MessageSquare,
+  Info,
+  Users,
+  ImageIcon,
+  Star,
+  QrCodeIcon,
+} from "lucide-react";
 
 const TABS_CONFIG = [
   {
@@ -10,7 +17,6 @@ const TABS_CONFIG = [
     icon: MessageSquare,
     badge: null,
   },
-  // Tab Mới
   {
     id: "reviews",
     label: "Đánh giá",
@@ -69,7 +75,11 @@ const EventTabs = ({ activeTab, setActiveTab, badgeCounts = {} }) => {
                       ? "bg-white text-primary-600 shadow-sm border border-gray-200"
                       : "text-gray-600 hover:bg-white/80 hover:text-gray-900"
                   }`}>
-                <Icon className={`w-4.5 h-4.5 ${isActive ? "text-primary-600" : "text-gray-500"}`} />
+                <Icon
+                  className={`w-4.5 h-4.5 ${
+                    isActive ? "text-primary-600" : "text-gray-500"
+                  }`}
+                />
                 <span>{tab.label}</span>
 
                 {count > 0 && (

@@ -3,18 +3,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api";
 
-/* ======================================================
-   THUNKS
-====================================================== */
-
-// Lấy channel theo eventId (discussion của event)
 export const fetchChannelByEventId = createAsyncThunk(
   "channel/fetchByEventId",
   async (eventId, { rejectWithValue }) => {
     try {
       const res = await api.get(`/api/channel/event/${eventId}`);
-      console.log("🟢 CHANNEL DATA:", res.data);
-      return res.data; // ✅ CHÍNH XÁC
+
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Không thể tải kênh thảo luận"
@@ -23,22 +18,15 @@ export const fetchChannelByEventId = createAsyncThunk(
   }
 );
 
-
-
-/* ======================================================
-   SLICE
-====================================================== */
-
 const channelSlice = createSlice({
   name: "channel",
   initialState: {
-    current: null, // channel hiện tại (theo event)
+    current: null,
     loading: false,
     error: null,
   },
 
   reducers: {
-    // ✅ FIX: clearChannel tồn tại thật
     clearChannel: (state) => {
       state.current = null;
       state.loading = false;
@@ -81,30 +69,18 @@ export const createPost = createAsyncThunk(
       if (attachment) {
         formData.append("picture", attachment.fileObject);
         formData.append("pictureType", attachment.type);
-      } 
+      }
 
       console.log("🟠 Sending request to /api/post");
 
-      const { data } = await api.post(
-        "/api/post",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log("🟢 API SUCCESS");
-      console.log("👉 response data:", data);
+      const { data } = await api.post("/api/post", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       return data.data;
     } catch (err) {
-      console.error("🔴 [createPost] ERROR");
-      console.error("👉 error:", err);
-      console.error("👉 response:", err.response);
-      console.error("👉 response data:", err.response?.data);
-
       return rejectWithValue(
         err.response?.data?.message || "Tạo bài viết thất bại"
       );
@@ -112,9 +88,6 @@ export const createPost = createAsyncThunk(
   }
 );
 
-
-
-// 3️⃣ Tạo comment
 export const createComment = createAsyncThunk(
   "channel/createComment",
   async ({ postId, parentCommentId, content }, { rejectWithValue }) => {
@@ -131,7 +104,7 @@ export const createComment = createAsyncThunk(
 
       const { data } = await api.post("/api/comment", payload);
 
-      return data.data; // comment mới
+      return data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Tạo bình luận thất bại"
@@ -140,8 +113,6 @@ export const createComment = createAsyncThunk(
   }
 );
 
-
-// 4️⃣ Like / reaction
 export const togglePostReaction = createAsyncThunk(
   "channel/toggleReaction",
   async ({ postId, type = "like" }, { rejectWithValue }) => {
@@ -150,7 +121,7 @@ export const togglePostReaction = createAsyncThunk(
         post: postId,
         type,
       });
-      return data.data; // post đã update reaction
+      return data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Reaction thất bại"
@@ -167,7 +138,7 @@ export const toggleCommentReaction = createAsyncThunk(
         comment: commentId,
         type,
       });
-      return data.data; // post đã update reaction
+      return data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Reaction thất bại"
@@ -175,7 +146,5 @@ export const toggleCommentReaction = createAsyncThunk(
     }
   }
 );
-
-
 
 export default channelSlice.reducer;

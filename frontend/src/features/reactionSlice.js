@@ -2,9 +2,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// ================================
 // ADD OR UPDATE REACTION
-// ================================
 export const addReaction = createAsyncThunk(
   "reaction/addReaction",
   async (payload, { rejectWithValue }) => {
@@ -17,9 +15,7 @@ export const addReaction = createAsyncThunk(
   }
 );
 
-// ================================
 // REMOVE REACTION
-// ================================
 export const removeReaction = createAsyncThunk(
   "reaction/removeReaction",
   async (id, { rejectWithValue }) => {
@@ -32,9 +28,7 @@ export const removeReaction = createAsyncThunk(
   }
 );
 
-// ================================
 // GET REACTIONS (POST OR COMMENT)
-// ================================
 export const getReactions = createAsyncThunk(
   "reaction/getReactions",
   async (query, { rejectWithValue }) => {
@@ -52,14 +46,12 @@ export const getReactions = createAsyncThunk(
   }
 );
 
-// ================================
 // SLICE
-// ================================
 const reactionSlice = createSlice({
   name: "reaction",
   initialState: {
-    reactionsByTarget: {}, // { post: {postId: []}, comment: {commentId: []} }
-    summaryByTarget: {},   // { post: {...}, comment: {...} }
+    reactionsByTarget: {},
+    summaryByTarget: {},
     loading: false,
     error: null,
   },
@@ -93,21 +85,16 @@ const reactionSlice = createSlice({
       .addCase(addReaction.fulfilled, (state, action) => {
         const r = action.payload;
 
-        const key = r.post
-          ? `post-${r.post}`
-          : `comment-${r.comment}`;
+        const key = r.post ? `post-${r.post}` : `comment-${r.comment}`;
 
-        // Nếu chưa có gì thì tạo mảng
         if (!state.reactionsByTarget[key]) {
           state.reactionsByTarget[key] = [];
         }
 
-        // Xóa reaction cũ của user nếu có (vì backend update reaction)
         state.reactionsByTarget[key] = state.reactionsByTarget[key].filter(
-          react => react.user !== r.user
+          (react) => react.user !== r.user
         );
 
-        // Thêm reaction mới
         state.reactionsByTarget[key].push(r);
       })
 
@@ -117,7 +104,7 @@ const reactionSlice = createSlice({
 
         for (const key in state.reactionsByTarget) {
           state.reactionsByTarget[key] = state.reactionsByTarget[key].filter(
-            r => r._id !== id
+            (r) => r._id !== id
           );
         }
       });

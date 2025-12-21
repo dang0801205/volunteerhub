@@ -19,26 +19,26 @@ const router = express.Router();
  * @desc    Create a post (volunteer, manager, admin allowed)
  * @access  Protected
  */
-router.post(
-  "/",
-  protect,
-  uploadPicture,
-  createPost
-);
+router.post("/", protect, uploadPicture, createPost);
 
 /**
  * @route   GET /api/post
  * @desc    Get all posts (ADMIN only)
  * @access  Protected (Admin)
  */
-router.get("/all-posts", protect, (req, res, next) => {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({
-      message: "Only admin can access all posts",
-    });
-  }
-  next();
-}, getPosts);
+router.get(
+  "/all-posts",
+  protect,
+  (req, res, next) => {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Only admin can access all posts",
+      });
+    }
+    next();
+  },
+  getPosts
+);
 
 /**
  * @route   GET /api/post/:channelId/posts
@@ -50,15 +50,10 @@ router.get("/:channelId/posts", protect, getPostsByChannel);
 
 /**
  * @route   PUT /api/post/:id
- * @desc    Update post 
+ * @desc    Update post
  * @access  Protected (only owner)
  */
-router.put(
-  "/:id",
-  protect,
-  uploadPicture,
-  updatePost
-);
+router.put("/:id", protect, uploadPicture, updatePost);
 
 /**
  * @route   DELETE /api/posts/:id

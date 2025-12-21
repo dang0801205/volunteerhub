@@ -28,9 +28,6 @@ const ConfirmModal = ({
   cancelText = "Hủy",
   type = "question",
 }) => {
-  // Remove early return to allow AnimatePresence to work correctly
-  // if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       {isOpen && (

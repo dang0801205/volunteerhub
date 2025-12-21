@@ -1,3 +1,5 @@
+/** @format */
+
 const reactions = [
   { type: "like", emoji: "👍" },
   { type: "love", emoji: "❤️" },
@@ -8,13 +10,12 @@ const reactions = [
 ];
 
 const ReactionHover = ({ onSelect }) => (
-  <div className="absolute -top-12 left-0 flex gap-1 bg-white border rounded-full px-2 py-1 shadow-lg z-50">
-    {reactions.map(r => (
+  <div className='absolute -top-12 left-0 flex gap-1 bg-white border rounded-full px-2 py-1 shadow-lg z-50'>
+    {reactions.map((r) => (
       <button
         key={r.type}
         onClick={() => onSelect(r.type)}
-        className="text-lg hover:scale-125 transition"
-      >
+        className='text-lg hover:scale-125 transition'>
         {r.emoji}
       </button>
     ))}

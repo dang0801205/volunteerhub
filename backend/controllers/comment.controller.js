@@ -5,9 +5,8 @@ import Post from "../models/postModel.js";
 import Event from "../models/eventModel.js";
 import Channel from "../models/channelModel.js";
 
-// ================================
-// CREATE COMMENT
-// ================================
+// @desc    Tạo bình luận mới cho bài viết
+// @access  Private
 export const createComment = asyncHandler(async (req, res) => {
   const { content, post: postId, parentComment } = req.body;
   const image = req.file?.path || null;
@@ -95,9 +94,8 @@ export const createComment = asyncHandler(async (req, res) => {
   res.status(201).json(comment);
 });
 
-// ================================
-// GET COMMENTS OF A POST
-// ================================
+// @desc    Lấy tất cả bình luận của một bài viết
+// @access  Public
 export const getCommentsByPost = asyncHandler(async (req, res) => {
   const postId = req.params.postId;
 
@@ -133,9 +131,8 @@ export const getCommentsByPost = asyncHandler(async (req, res) => {
   res.json(comments);
 });
 
-// ================================
-// UPDATE COMMENT (OWNER ONLY)
-// ================================
+// @desc    Cập nhật nội dung bình luận
+// @access  Private
 export const updateComment = asyncHandler(async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment || comment.isDeleted) {
@@ -158,9 +155,8 @@ export const updateComment = asyncHandler(async (req, res) => {
   res.json(updatedComment);
 });
 
-// ================================
-// DELETE COMMENT (ROLE-BASED)
-// ================================
+// @desc    Xóa bình luận
+// @access  Private (Chủ sở hữu hoặc Admin)
 export const deleteComment = asyncHandler(async (req, res) => {
   const comment = await Comment.findById(req.params.id).populate(
     "author",
@@ -198,7 +194,6 @@ export const deleteComment = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
-  // SOFT DELETE
   comment.isDeleted = true;
   await comment.save();
 

@@ -1,9 +1,4 @@
-/**
- * @format
- * @file App.jsx
- * @description Main application component with routing and authentication
- * @pattern Container Component Pattern
- */
+/** @format */
 
 // React core
 import { useState, useEffect } from "react";
@@ -31,10 +26,7 @@ import VolunteerHistory from "./pages/dashboard/VolunteerHistory.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
 import EventDetail from "./pages/public/EventDetailPage.jsx";
 import { connectSocket, disconnectSocket } from "./clientSocket.js";
-/**
- * Main App Component
- * Handles global routing, authentication state, and layout
- */
+
 export default function App() {
   const dispatch = useDispatch();
 
@@ -51,10 +43,6 @@ export default function App() {
   // Local state
   const [authModal, setAuthModal] = useState(null); // "login" | "register" | null
 
-  /**
-   * Initialize user authentication on mount
-   * Fetches user profile if token exists in localStorage
-   */
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -62,10 +50,6 @@ export default function App() {
     }
   }, [dispatch]);
 
-  /**
-   * Handle successful authentication
-   * @param {Object} data - Authentication response data
-   */
   const handleSuccess = async (data) => {
     if (data?.token) {
       localStorage.setItem("token", data.token);
@@ -81,27 +65,19 @@ export default function App() {
     return () => disconnectSocket();
   }, [user, profileChecked]);
 
-  /**
-   * Handle user logout
-   * Clears token and redirects to home
-   */
   const handleLogout = () => {
     localStorage.removeItem("token");
     dispatch(userLogout());
     window.location.href = "/";
   };
 
-  /**
-   * Handle auth modal close
-   */
   const handleCloseModal = () => {
     setAuthModal(null);
   };
 
-  // ✅ Gate: có token mà chưa check xong => đợi, đừng cho ProtectedRoute redirect bậy lúc refresh
   const token = localStorage.getItem("token");
   if ((token && !profileChecked) || loadingUser) {
-return (
+    return (
       <div className='min-h-screen w-full flex items-center justify-center bg-gray-100'>
         Đang tải...
       </div>
@@ -195,7 +171,7 @@ return (
                 element={<Media user={user} openAuth={setAuthModal} />}
               />
             </Route>
-<Route path='*' element={<Navigate to='/' />} />
+            <Route path='*' element={<Navigate to='/' />} />
           </Routes>
         </main>
 

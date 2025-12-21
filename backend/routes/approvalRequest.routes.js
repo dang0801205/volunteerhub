@@ -6,7 +6,7 @@ import {
   approveRequest,
   rejectRequest,
   getRequestById,
-  getMyRequests, // Manager xem yêu cầu của mình
+  getMyRequests,
 } from "../controllers/approvalRequest.controller.js";
 import { protect, allowAdminOnly } from "../middlewares/auth.middleware.js";
 

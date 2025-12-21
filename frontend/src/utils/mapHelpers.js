@@ -1,17 +1,7 @@
-/**
- * @format
- * @file mapHelpers.js
- * @description Map-related utility functions and constants
- * @pattern Utility Module Pattern
- */
+/** @format */
 
 import { Icon } from "leaflet";
 
-// ==================== CONSTANTS ====================
-
-/**
- * Default Leaflet marker icon configuration
- */
 export const DEFAULT_MARKER_ICON = new Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl:
@@ -22,19 +12,10 @@ export const DEFAULT_MARKER_ICON = new Icon({
   popupAnchor: [1, -34],
 });
 
-/**
- * Earth radius in kilometers for distance calculations
- */
 export const EARTH_RADIUS_KM = 6371;
 
-/**
- * Default fallback coordinate (Hanoi, Vietnam)
- */
 export const FALLBACK_COORDINATE = { lat: 21.0285, lng: 105.8542 };
 
-/**
- * Mapping of major Vietnam cities to their coordinates
- */
 export const VIETNAM_CITY_COORDS = {
   "hà nội": { lat: 21.0285, lng: 105.8542 },
   hanoi: { lat: 21.0285, lng: 105.8542 },
@@ -50,21 +31,8 @@ export const VIETNAM_CITY_COORDS = {
   "can tho": { lat: 10.0452, lng: 105.7469 },
 };
 
-// ==================== UTILITY FUNCTIONS ====================
-
-/**
- * Convert degrees to radians
- * @param {number} value - Angle in degrees
- * @returns {number} Angle in radians
- */
 const toRadians = (value) => (value * Math.PI) / 180;
 
-/**
- * Calculate distance between two geographic points using Haversine formula
- * @param {Object} pointA - First point {lat, lng}
- * @param {Object} pointB - Second point {lat, lng}
- * @returns {number} Distance in kilometers
- */
 export const calculateDistanceKm = (pointA, pointB) => {
   if (!pointA || !pointB) return Number.POSITIVE_INFINITY;
 
@@ -81,22 +49,12 @@ export const calculateDistanceKm = (pointA, pointB) => {
   return EARTH_RADIUS_KM * c;
 };
 
-/**
- * Format distance value for display
- * @param {number} value - Distance in kilometers
- * @returns {string} Formatted distance string
- */
 export const formatDistance = (value) => {
   if (!Number.isFinite(value)) return "—";
   if (value < 1) return `${Math.round(value * 1000)} m`;
   return `${value.toFixed(1)} km`;
 };
 
-/**
- * Convert radius to appropriate zoom level for map display
- * @param {number} radiusKm - Radius in kilometers
- * @returns {number} Zoom level (3-11)
- */
 export const radiusToZoomLevel = (radiusKm) => {
   if (radiusKm <= 20) return 11;
   if (radiusKm <= 60) return 9;
@@ -105,12 +63,6 @@ export const radiusToZoomLevel = (radiusKm) => {
   return 3;
 };
 
-/**
- * Check if two coordinates are the same (within precision tolerance)
- * @param {Object} pointA - First point {lat, lng}
- * @param {Object} pointB - Second point {lat, lng}
- * @returns {boolean} True if coordinates are same
- */
 export const isSameCoordinate = (pointA, pointB) => {
   if (!pointA || !pointB) return false;
   return (
@@ -123,10 +75,8 @@ export const getCoordinatesFromLocation = (location) => {
   if (!location) return null;
   const locationLower = location.toLowerCase().trim();
 
-  // Check direct match against VIETNAM_CITY_COORDS
   for (const [city, coords] of Object.entries(VIETNAM_CITY_COORDS)) {
     if (locationLower.includes(city)) {
-      // Add small random offset to prevent exactly overlapping markers
       return {
         lat: coords.lat + (Math.random() - 0.5) * 0.02,
         lng: coords.lng + (Math.random() - 0.5) * 0.02,
@@ -135,10 +85,6 @@ export const getCoordinatesFromLocation = (location) => {
   }
 };
 
-/**
- * Open Google Maps with directions to event location
- * @param {Object} event - Event object with coordinates or location
- */
 export const openGoogleMaps = (event) => {
   if (event?.coordinates) {
     window.open(

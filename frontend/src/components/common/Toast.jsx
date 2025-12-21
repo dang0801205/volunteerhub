@@ -1,10 +1,9 @@
 /** @format */
 
-import React, { useEffect, forwardRef } from "react"; // 1. Import forwardRef
+import React, { useEffect, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Info, AlertTriangle, X } from "lucide-react";
 
-// 2. Bao bọc component bằng forwardRef
 const Toast = forwardRef(
   ({ id, message, type = "success", onClose, duration = 3000 }, ref) => {
     useEffect(() => {
@@ -39,7 +38,7 @@ const Toast = forwardRef(
 
     return (
       <motion.div
-        ref={ref} // 3. Gắn ref vào thẻ cha ngoài cùng (motion.div)
+        ref={ref}
         layout
         initial='initial'
         animate='animate'
@@ -58,7 +57,6 @@ const Toast = forwardRef(
   }
 );
 
-// 4. Đặt displayName để dễ debug trong React DevTools (Optional nhưng nên làm)
 Toast.displayName = "Toast";
 
 export const ToastContainer = ({ toasts, removeToast }) => {

@@ -1,3 +1,5 @@
+/** @format */
+
 import mongoose from "mongoose";
 
 const pushSubscriptionSchema = new mongoose.Schema(
@@ -11,7 +13,7 @@ const pushSubscriptionSchema = new mongoose.Schema(
     endpoint: {
       type: String,
       required: true,
-      unique: true, // CHỐNG TRÙNG
+      unique: true,
     },
     keys: {
       p256dh: { type: String, required: true },

@@ -14,10 +14,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Actions
 import { fetchEvents } from "../../features/eventSlice";
 
-// Components
 import DashboardHeader from "../dashboard/DashboardHeader";
 import StatCard from "../../components/common/StatCard";
 import InteractiveCalendar from "../dashboard/InteractiveCalendar";
@@ -28,8 +26,6 @@ import {
   TrendingEventsSection,
   NewlyAnnouncedSection,
 } from "./EventListDashboard";
-
-// Utils
 import {
   calculateDistanceKm,
   radiusToZoomLevel,
@@ -37,7 +33,7 @@ import {
 } from "../../utils/mapHelpers";
 import { getEventTimeStatus } from "../../utils/eventHelpers";
 
-const FALLBACK_COORDINATE = { lat: 21.0285, lng: 105.8542 }; // Hanoi
+const FALLBACK_COORDINATE = { lat: 21.0285, lng: 105.8542 };
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -49,7 +45,6 @@ const Dashboard = () => {
   const [radiusKm, setRadiusKm] = useState(200);
   const [activeEventId, setActiveEventId] = useState(null);
 
-  // --- Logic Fetch Data & Tính Toán (Giữ nguyên) ---
   const handleFetchEvents = () => {
     dispatch(fetchEvents({ limit: 100, status: "approved" }));
   };
@@ -200,7 +195,6 @@ const Dashboard = () => {
     setActiveEventId(null);
   };
 
-  // --- Render Loading/Error ---
   if (loading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
@@ -232,7 +226,6 @@ const Dashboard = () => {
     );
   }
 
-  // --- Main Render ---
   return (
     <div className='min-h-screen bg-gray-50 px-4 sm:px-6 py-6'>
       <div className='mx-auto max-w-7xl space-y-6'>
@@ -286,7 +279,6 @@ const Dashboard = () => {
             />
           </motion.div>
 
-          {/* Dynamic Event List (Selected/Upcoming) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

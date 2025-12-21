@@ -1,7 +1,3 @@
-/**
- * @file index.js
- * @description Central export point for all services
- * @pattern Barrel Export Pattern
- */
+/** @format */
 
-export * from './eventService';
+export * from "./eventService";

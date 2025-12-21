@@ -97,7 +97,7 @@ export default function ManagerDashboard({ user }) {
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
-  // Logic lọc dữ liệu (Giữ nguyên)
+  // Logic lọc dữ liệu
   const myEvents = useMemo(() => {
     if (!allEvents.length || !activeUser?._id) return [];
     return allEvents.filter((event) => {
@@ -322,7 +322,7 @@ export default function ManagerDashboard({ user }) {
   return (
     <div className='min-h-screen bg-gray-50/50 p-6 font-sans'>
       <div className='max-w-7xl mx-auto space-y-6'>
-        {/* WELCOME SECTION (Thay cho Header cũ) */}
+        {/* WELCOME SECTION */}
         <div className='flex flex-col gap-1 mb-2'>
           <h1 className='text-3xl font-extrabold text-gray-900 tracking-tight'>
             Manager Dashboard
@@ -515,10 +515,8 @@ export default function ManagerDashboard({ user }) {
         <EventsForm
           eventToEdit={editingEvent}
           onSave={async (finalData) => {
-            // ✅ Nhận dữ liệu finalData từ form gửi về
             try {
               if (editingEvent) {
-                // TRƯỜNG HỢP: Cập nhật sự kiện đã có
                 await dispatch(
                   updateEvent({
                     eventId: editingEvent._id,
@@ -527,7 +525,6 @@ export default function ManagerDashboard({ user }) {
                 ).unwrap();
                 addToast("Đã cập nhật sự kiện thành công", "success");
               } else {
-                // TRƯỜNG HỢP: Tạo sự kiện mới
                 await dispatch(createEvent(finalData)).unwrap();
                 addToast(
                   "Tạo sự kiện mới thành công! Đang chờ Admin duyệt.",
@@ -535,12 +532,10 @@ export default function ManagerDashboard({ user }) {
                 );
               }
 
-              // ✅ SAU KHI LƯU THÀNH CÔNG:
-              dispatch(fetchManagementEvents()); // Tải lại danh sách để hiển thị sự kiện mới
-              setShowEventForm(false); // Đóng form
-              setEditingEvent(null); // Reset trạng thái sửa
+              dispatch(fetchManagementEvents());
+              setShowEventForm(false);
+              setEditingEvent(null);
             } catch (error) {
-              // Nếu có lỗi từ server (ví dụ: trùng tên, lỗi mạng)
               addToast(error || "Lỗi khi lưu sự kiện", "error");
             }
           }}

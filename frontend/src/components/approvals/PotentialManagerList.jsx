@@ -75,15 +75,12 @@ const PotentialManagerList = ({
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
             {suggestedUsers.map((user) => {
-              // 1. Xác định xem hàng này có đang được highlight hay không
               const isHighlighted = user._id === highlightedId;
 
               return (
                 <tr
                   key={user._id}
-                  // 2. Gán ID để useEffect trong component có thể tìm và cuộn đến đúng dòng này
                   id={`suggestion-card-${user._id}`}
-                  // 3. Cập nhật ClassName: Thêm viền (ring) và nền màu xanh lá khi được highlight
                   className={`transition-all duration-500 group ${
                     isHighlighted
                       ? "bg-green-100 ring-2 ring-green-500 ring-inset z-10 relative shadow-sm"

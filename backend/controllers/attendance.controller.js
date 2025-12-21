@@ -49,14 +49,12 @@ const calcAverageRatings = async (eventId) => {
 const addFeedback = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
 
-  // 1. Tìm attendance
   const attendance = await Attendance.findById(req.params.id);
   if (!attendance) {
     res.status(404);
     throw new Error("Không tìm thấy bản ghi điểm danh.");
   }
 
-  // 2. Validate: Phải là người tham gia (đã check-out)
   if (attendance.status !== "completed" || !attendance.checkOut) {
     res.status(400);
     throw new Error(
@@ -69,14 +67,12 @@ const addFeedback = asyncHandler(async (req, res) => {
     throw new Error("Bạn đã gửi phản hồi cho sự kiện này rồi.");
   }
 
-  // 3. Lưu feedback
   if (!attendance.feedback) attendance.feedback = {};
   attendance.feedback.rating = rating;
   attendance.feedback.comment = comment;
   attendance.feedback.submittedAt = Date.now();
   await attendance.save();
 
-  // 4. Update Event Rating
   const registration = await Registration.findById(attendance.regId);
   if (registration) {
     await calcAverageRatings(registration.eventId);
@@ -109,13 +105,7 @@ const getEventFeedbacks = asyncHandler(async (req, res) => {
     throw new Error("Không tìm thấy sự kiện.");
   }
 
-  // --- ĐÃ XÓA ĐOẠN CHECK QUYỀN MANAGER/ADMIN ---
-  // Mặc định route này sẽ đi qua middleware 'protect' (verifyToken) ở Router
-  // nên req.user tồn tại là đủ điều kiện để xem.
-
   const registrationIds = await Registration.find({ eventId }).distinct("_id");
-
-  // Tìm tất cả feedback của sự kiện đó
   const feedbacks = await Attendance.find({
     regId: { $in: registrationIds },
     "feedback.rating": { $exists: true },
@@ -186,7 +176,7 @@ const getAttendanceByRegId = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Lấy danh sách điểm danh chi tiết của sự kiện (Quản lý danh sách)
+// @desc    Lấy danh sách điểm danh chi tiết của sự kiện
 // @route   GET /api/attendances/event/:eventId
 // @access  Private (Manager/Admin - Chỉ người quản lý sự kiện)
 const getAttendancesByEvent = asyncHandler(async (req, res) => {

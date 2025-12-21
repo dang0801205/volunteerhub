@@ -36,7 +36,6 @@ const EventDetailModal = ({
 }) => {
   if (!event) return null;
 
-  // Lấy thông tin organizer an toàn
   const getOrganizer = () => {
     if (
       event.createdBy &&
@@ -146,7 +145,6 @@ const EventDetailModal = ({
         {/* Nội dung cuộn */}
         <div className='flex-1 overflow-y-auto p-6 bg-gray-50'>
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-            {/* Cột trái: Mô tả + Danh sách đăng ký */}
             <div className='lg:col-span-2 space-y-8'>
               {/* Mô tả */}
               <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-200'>
@@ -240,8 +238,7 @@ const EventDetailModal = ({
                         <LocationPicker
                           lat={event.coordinate.lat}
                           lng={event.coordinate.lng}
-                          onLocationSelect={() => {}} // Không cần chọn lại → để trống hoặc ẩn click
-                          // Có thể thêm prop readOnly nếu bạn muốn tắt click
+                          onLocationSelect={() => {}}
                         />
                       </div>
                     ) : (
@@ -268,7 +265,6 @@ const EventDetailModal = ({
                 </div>
                 <div className='flex items-start gap-3'>
                   <Star className='w-5 h-5 text-yellow-500 mt-0.5 fill-yellow-500' />{" "}
-                  {/* fill-yellow-500 để tô màu vàng */}
                   <div>
                     <p className='font-semibold text-gray-700'>Đánh giá</p>
                     <div className='flex items-baseline gap-2'>
@@ -289,7 +285,6 @@ const EventDetailModal = ({
           </div>
         </div>
 
-        {/* Footer với hành động duyệt (nếu bật) */}
         {showApprovalActions && (
           <div className='p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-4'>
             <button
@@ -307,7 +302,6 @@ const EventDetailModal = ({
           </div>
         )}
 
-        {/* Footer đóng nếu không có duyệt */}
         {!showApprovalActions && (
           <div className='p-6 border-t border-gray-200 bg-gray-50 text-right'>
             <button

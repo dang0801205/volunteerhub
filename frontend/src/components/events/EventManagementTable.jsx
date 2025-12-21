@@ -23,7 +23,7 @@ import {
 
 const EventManagementTable = ({
   events = [],
-  registrations = [], // Dữ liệu đăng ký từ Redux (đã cập nhật status)
+  registrations = [],
   cancelRequests = [],
   onApprove,
   onReject,
@@ -49,7 +49,6 @@ const EventManagementTable = ({
   };
 
   // 2. Helper tính số lượng ĐÃ DUYỆT (Registered / Approved)
-  // Hàm này giúp số liệu cập nhật Real-time khi Manager duyệt đơn
   const getApprovedCount = (eventId) => {
     return registrations.filter(
       (reg) =>
@@ -77,7 +76,6 @@ const EventManagementTable = ({
     }
   }, [highlightedId]);
 
-  // Config Status UI
   const getStatusConfig = (status) => {
     switch (status) {
       case "approved":
@@ -247,9 +245,8 @@ const EventManagementTable = ({
                 const statusInfo = getStatusConfig(event.status);
                 const StatusIcon = statusInfo.icon;
 
-                // Tính toán số liệu
                 const pendingCount = getPendingCount(event._id);
-                // 👇 DÙNG HÀM NÀY THAY VÌ event.registeredCount ĐỂ CẬP NHẬT LIVE
+
                 const registered = getApprovedCount(event._id);
                 const max = event.maxParticipants || 1;
                 const percent = Math.min((registered / max) * 100, 100);

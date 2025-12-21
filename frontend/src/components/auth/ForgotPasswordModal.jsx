@@ -1,8 +1,10 @@
+/** @format */
+
 import { useState } from "react";
 import api from "../../api.js";
 
 export default function ForgotPasswordModal({ onClose }) {
-  const [step, setStep] = useState(0); // 0=email, 1=code+new pass
+  const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -47,33 +49,29 @@ export default function ForgotPasswordModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="card w-full max-w-sm p-6 relative">
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'>
+      <div className='card w-full max-w-sm p-6 relative'>
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-text-muted hover:text-text-main"
-        >
+          className='absolute top-3 right-3 text-text-muted hover:text-text-main'>
           ✕
         </button>
 
-        <h2 className="text-xl font-bold text-center mb-4">
-          Quên mật khẩu
-        </h2>
+        <h2 className='text-xl font-bold text-center mb-4'>Quên mật khẩu</h2>
 
         {step === 0 && (
           <>
             <input
-              type="email"
-              placeholder="Nhập email của bạn"
+              type='email'
+              placeholder='Nhập email của bạn'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field mb-3"
+              className='input-field mb-3'
             />
             <button
               onClick={sendResetCode}
               disabled={loading}
-              className="btn btn-primary w-full"
-            >
+              className='btn btn-primary w-full'>
               {loading ? "Sending..." : "Gửi mã xác nhận"}
             </button>
           </>
@@ -82,38 +80,33 @@ export default function ForgotPasswordModal({ onClose }) {
         {step === 1 && (
           <>
             <input
-              type="text"
-              placeholder="Mã xác nhận"
+              type='text'
+              placeholder='Mã xác nhận'
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="input-field mb-2"
+              className='input-field mb-2'
             />
             <input
-              type="password"
-              placeholder="Mật khẩu mới"
+              type='password'
+              placeholder='Mật khẩu mới'
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="input-field mb-3"
+              className='input-field mb-3'
             />
             <button
               onClick={resetPassword}
               disabled={loading}
-              className="btn btn-primary w-full"
-            >
+              className='btn btn-primary w-full'>
               {loading ? "Processing..." : "Đặt lại mật khẩu"}
             </button>
           </>
         )}
 
         {success && (
-          <p className="mt-3 text-success-600 text-sm text-center">
-            {success}
-          </p>
+          <p className='mt-3 text-success-600 text-sm text-center'>{success}</p>
         )}
         {error && (
-          <p className="mt-3 text-error-600 text-sm text-center">
-            {error}
-          </p>
+          <p className='mt-3 text-error-600 text-sm text-center'>{error}</p>
         )}
       </div>
     </div>

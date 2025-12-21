@@ -20,7 +20,6 @@ const VolunteerApprovalModal = ({
 }) => {
   if (!registration) return null;
 
-  // FIX: Sử dụng fallback {} để tránh crash nếu volunteer hoặc event bị null (do user bị xóa)
   const volunteer = registration.volunteer || {};
   const event = registration.event || {};
 
@@ -36,7 +35,6 @@ const VolunteerApprovalModal = ({
           </button>
           <div className='flex items-center gap-4'>
             <div className='w-20 h-20 rounded-full border-4 border-white/30 overflow-hidden bg-white flex items-center justify-center'>
-              {/* FIX: Kiểm tra an toàn profilePicture */}
               {volunteer?.profilePicture ? (
                 <img
                   src={volunteer.profilePicture}
@@ -45,13 +43,11 @@ const VolunteerApprovalModal = ({
                 />
               ) : (
                 <div className='text-emerald-600 text-2xl font-bold'>
-                  {/* FIX: Fallback ký tự đầu tiên */}
                   {volunteer?.userName?.charAt(0) || "U"}
                 </div>
               )}
             </div>
             <div>
-              {/* FIX: Fallback tên hiển thị */}
               <h2 className='text-2xl font-bold'>
                 {volunteer?.userName || "Người dùng không tồn tại"}
               </h2>
@@ -74,7 +70,7 @@ const VolunteerApprovalModal = ({
             </p>
             <div className='flex items-center gap-2 text-sm text-gray-600 mt-1'>
               <Calendar className='w-4 h-4' />
-              {/* FIX: Kiểm tra ngày tháng an toàn */}
+
               {event?.startDate
                 ? new Date(event.startDate).toLocaleDateString("vi-VN")
                 : "N/A"}

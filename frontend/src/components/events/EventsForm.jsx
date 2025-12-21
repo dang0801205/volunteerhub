@@ -5,9 +5,8 @@ import { EVENT_STATUS } from "../../types";
 import { EVENT_CATEGORIES } from "../../utils/constants";
 import { eventValidationSchema } from "../../utils/validationSchemas";
 import LocationPicker from "./LocationPick";
-import { X } from "lucide-react"; // Import icon X từ thư viện (hoặc dùng SVG bên dưới)
+import { X } from "lucide-react";
 
-// Icon Check (Giữ nguyên)
 const CheckIcon = () => (
   <svg
     className='w-5 h-5'
@@ -52,7 +51,6 @@ export const EventsForm = ({ eventToEdit, onSave, onClose }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
 
-  // --- LOGIC GIỮ NGUYÊN ---
   useEffect(() => {
     if (eventToEdit) {
       const lat = eventToEdit.coordinate?.lat ?? eventToEdit.latitude ?? "";
@@ -147,12 +145,7 @@ export const EventsForm = ({ eventToEdit, onSave, onClose }) => {
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200'>
-      {/* CONTAINER MODAL:
-          - relative: Để làm mốc tọa độ cho nút đóng.
-          - overflow-visible: Để nút đóng không bị ẩn khi nằm ngoài khung.
-      */}
       <div className='bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] relative overflow-visible flex flex-col'>
-        {/* --- NÚT ĐÓNG (CLOSE BUTTON) MỚI --- */}
         <button
           type='button'
           onClick={onClose}
@@ -160,7 +153,6 @@ export const EventsForm = ({ eventToEdit, onSave, onClose }) => {
           aria-label='Đóng form'>
           <X className='w-5 h-5' />
         </button>
-        {/* ----------------------------------- */}
 
         <form
           onSubmit={handleSubmit}
@@ -299,7 +291,6 @@ export const EventsForm = ({ eventToEdit, onSave, onClose }) => {
   );
 };
 
-// --- SUB-COMPONENTS (GIỮ NGUYÊN) ---
 const InputField = ({ label, error, children }) => (
   <div>
     <label className='block text-sm font-semibold text-gray-700 mb-1'>
@@ -356,7 +347,7 @@ const LocationSection = ({
       errors["coordinate.lng"]) && (
       <div className='mt-3 p-4 bg-red-50 border border-red-200 rounded-lg'>
         <p className='text-sm text-red-700 font-medium'>
-          ⚠️ Vui lòng chọn chính xác vị trí tổ chức sự kiện trên bản đồ
+          Vui lòng chọn chính xác vị trí tổ chức sự kiện trên bản đồ
         </p>
         <p className='text-xs text-red-600 mt-1'>
           Thông tin này giúp tình nguyện viên dễ dàng tìm đường đến địa điểm.

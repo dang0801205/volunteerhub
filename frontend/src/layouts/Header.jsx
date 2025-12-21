@@ -19,14 +19,11 @@ import { fullUrl } from "../api.js";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "../components/common/NotificationBell";
 
-// Header now expects `user` (object) instead of separate token/picture props.
-// App.jsx passes `user` and `setAuthModal` and `handleLogout`.
 export default function Header({ setAuthModal, user, handleLogout, PAGES }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
   const profileRef = useRef(null);
-  // Derive token/picture from user object for backward compatibility
   const token = !!user;
   const picture =
     user?.personalInformation?.picture ||
@@ -54,7 +51,6 @@ export default function Header({ setAuthModal, user, handleLogout, PAGES }) {
     setProfileOpen(false);
   }, [location.pathname]);
 
-  // Provide default pages if parent doesn't pass PAGES
   const defaultPages = [
     token
       ? { key: "Dashboard", path: "/dashboard", icon: HomeIcon }
@@ -99,7 +95,6 @@ export default function Header({ setAuthModal, user, handleLogout, PAGES }) {
 
         {/* Right buttons */}
         <div className='flex items-center gap-2'>
-          {/* Desktop Navigation - giữa logo và auth buttons */}
           <nav className='hidden md:flex items-center gap-1'>
             {PAGES.map((page) => {
               if (page.requiresAuth && !token) {
@@ -122,7 +117,7 @@ export default function Header({ setAuthModal, user, handleLogout, PAGES }) {
               );
             })}
           </nav>
-          {/* Check token to decide auth buttons */}
+
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

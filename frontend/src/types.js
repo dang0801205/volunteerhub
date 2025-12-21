@@ -1,8 +1,5 @@
 /** @format */
 
-// =================================================================
-// 1. EVENT STATUS (TRẠNG THÁI SỰ KIỆN)
-// =================================================================
 export const EVENT_STATUS = {
   PENDING: "pending", // Chờ Admin duyệt
   APPROVED: "approved", // Đã duyệt (Public)
@@ -10,27 +7,18 @@ export const EVENT_STATUS = {
   CANCELLED: "cancelled", // Đã hủy
 };
 
-// =================================================================
-// 2. REGISTRATION STATUS (TRẠNG THÁI ĐĂNG KÝ)
-// =================================================================
 export const REGISTRATION_STATUS = {
   WAITLISTED: "waitlisted", // Chờ Manager duyệt
   REGISTERED: "registered", // Đã tham gia (Manager đã duyệt)
   CANCELLED: "cancelled", // Đã hủy/Từ chối (Gộp chung)
 };
 
-// =================================================================
-// 3. ATTENDANCE STATUS (TRẠNG THÁI ĐIỂM DANH)
-// =================================================================
 export const ATTENDANCE_STATUS = {
   IN_PROGRESS: "in-progress", // Sự kiện đang diễn ra
   COMPLETED: "completed", // Đã hoàn thành nhiệm vụ
   ABSENT: "absent", // Vắng mặt
 };
 
-// =================================================================
-// 4. MAPPING HIỂN THỊ (LABEL TIẾNG VIỆT)
-// =================================================================
 export const STATUS_LABELS = {
   // Event
   [EVENT_STATUS.PENDING]: "Chờ duyệt",
@@ -49,10 +37,6 @@ export const STATUS_LABELS = {
   [ATTENDANCE_STATUS.ABSENT]: "Vắng mặt",
 };
 
-// =================================================================
-// 5. MAPPING MÀU SẮC (Dùng cho Badge/Tag UI)
-// (Ví dụ theo bảng màu Ant Design hoặc Tailwind)
-// =================================================================
 export const STATUS_COLORS = {
   // --- Event ---
   [EVENT_STATUS.PENDING]: "orange", // gold/warning
@@ -71,9 +55,6 @@ export const STATUS_COLORS = {
   [ATTENDANCE_STATUS.ABSENT]: "volcano",
 };
 
-// =================================================================
-// Helper Function: Lấy Label và Color theo Status
-// =================================================================
 export const getStatusInfo = (status) => {
   return {
     label: STATUS_LABELS[status] || "Không xác định",

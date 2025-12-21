@@ -4,9 +4,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api"; // <-- SỬ DỤNG INSTANCE API CHUNG
 
-// =============================================
 // 1. ADMIN: Lấy danh sách yêu cầu chờ duyệt
-// =============================================
 export const fetchPendingApprovals = createAsyncThunk(
   "approval/fetchPending",
   async (_, { rejectWithValue }) => {
@@ -23,9 +21,7 @@ export const fetchPendingApprovals = createAsyncThunk(
   }
 );
 
-// =============================================
 // 2. MANAGER/VOLUNTEER: Lấy danh sách yêu cầu đã gửi (MỚI)
-// =============================================
 export const fetchMyRequests = createAsyncThunk(
   "approval/fetchMyRequests",
   async (_, { rejectWithValue }) => {
@@ -42,13 +38,10 @@ export const fetchMyRequests = createAsyncThunk(
   }
 );
 
-// =============================================
-// 3. ADMIN: Duyệt / Từ chối Đa hình
-// =============================================
+// 3. ADMIN: Duyệt / Từ chối
 export const processApprovalRequest = createAsyncThunk(
   "approval/processRequest",
   async ({ requestId, actionType, adminNote = "" }, { rejectWithValue }) => {
-    // actionType là 'approve' hoặc 'reject'
     try {
       // Route: /api/approval-requests/:id/approve | /reject (Dùng PATCH)
       const { data } = await api.patch(
@@ -72,10 +65,10 @@ export const processApprovalRequest = createAsyncThunk(
 const approvalSlice = createSlice({
   name: "approval",
   initialState: {
-    pendingList: [], // Danh sách chờ duyệt (Admin)
-    myRequestsList: [], // Danh sách yêu cầu đã gửi (Manager/Volunteer)
+    pendingList: [],
+    myRequestsList: [],
     loading: false,
-    myRequestsLoading: false, // Loading riêng cho requests của User
+    myRequestsLoading: false,
     error: null,
     successMessage: null,
   },
@@ -124,7 +117,7 @@ const approvalSlice = createSlice({
           (item) => item._id !== processedId
         );
 
-        // Cập nhật trạng thái trong danh sách của User (nếu đang hiển thị)
+        // Cập nhật trạng thái trong danh sách của User
         state.myRequestsList = state.myRequestsList.map((item) =>
           item._id === processedId ? action.payload.data : item
         );

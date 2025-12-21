@@ -34,7 +34,6 @@ export default function Information({ onProfileUpdate }) {
     error,
     profileLoading,
   } = useSelector((state) => state.user);
-  //console.log("Dữ liệu User từ Redux:", reduxUser);
 
   const token = localStorage.getItem("token");
   const userId = token ? JSON.parse(atob(token.split(".")[1])).userId : null;
@@ -101,12 +100,10 @@ export default function Information({ onProfileUpdate }) {
     try {
       const formData = new FormData();
 
-      // Xử lý ảnh
       if (pictureFile) {
         formData.append("picture", pictureFile);
       }
 
-      // Xử lý thông tin cơ bản
       const pi = user.personalInformation || {};
       const nameValue = user.userName || pi.name || "";
       formData.append("userName", String(nameValue));
@@ -116,7 +113,6 @@ export default function Information({ onProfileUpdate }) {
 
       if (pi.biography) formData.append("biography", String(pi.biography));
 
-      // Xử lý Notification Prefs
       const np = user.notificationPrefs || {};
       if ("emailAnnouncements" in np)
         formData.append(
@@ -129,7 +125,6 @@ export default function Information({ onProfileUpdate }) {
           String(Boolean(np.emailAssignments))
         );
 
-      // 🔥 GỌI SLICE: Dùng .unwrap() để bắt lỗi/thành công ngay tại đây
       const updatedUser = await dispatch(updateUserProfile(formData)).unwrap();
 
       // Nếu thành công:
@@ -163,7 +158,7 @@ export default function Information({ onProfileUpdate }) {
         URL.revokeObjectURL(picturePreview);
         setPicturePreview(null);
       }
-      // Giữ nguyên chế độ edit để user sửa lại
+
       setEditing(true);
     }
   };
@@ -180,11 +175,10 @@ export default function Information({ onProfileUpdate }) {
     try {
       const targetId = user._id || user.id;
 
-      // 🔥 GỌI SLICE
       await dispatch(deleteUser(targetId)).unwrap();
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
-      window.location.href = "/"; // Quay về trang chủ
+      window.location.href = "/";
     } catch (err) {
       addToast(
         err.response?.data?.message || "Xóa tài khoản thất bại",
@@ -193,7 +187,6 @@ export default function Information({ onProfileUpdate }) {
     }
   };
 
-  // --- XỬ LÝ ĐỔI MẬT KHẨU DÙNG SLICE ---
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       addToast("Vui lòng điền đầy đủ các trường mật khẩu", "warning");
@@ -209,14 +202,12 @@ export default function Information({ onProfileUpdate }) {
         changeUserPassword({ currentPassword: oldPassword, newPassword })
       ).unwrap();
 
-      // Thành công
       addToast("Đổi mật khẩu thành công!", "success");
       setPasswordModal(false);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      // Lỗi đã được handle bởi useEffect global
       addToast(err || "Đổi mật khẩu thất bại", "error");
     }
   };

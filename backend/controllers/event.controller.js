@@ -47,19 +47,14 @@ const getEvents = asyncHandler(async (req, res) => {
 });
 
 export const getMyEvents = async (req, res) => {
-
   try {
-    // ===== 1. Kiểm tra auth =====
     if (!req.user) {
-      console.error("❌ [getMyEvents] req.user is undefined");
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     const userId = req.user._id;
     const role = req.user.role;
 
-
-    // ===== 2. Build query =====
     let query = { status: "approved" };
 
     if (role === "volunteer") {
@@ -67,44 +62,27 @@ export const getMyEvents = async (req, res) => {
     } else if (role === "manager") {
       query.managers = userId;
     } else if (role === "admin") {
-      console.log("🛡️ [getMyEvents] admin -> see all events");
     } else {
-      console.error("❌ [getMyEvents] Unsupported role:", role);
       return res.status(403).json({ message: "Role not supported" });
     }
 
-    // ===== 3. Query DB =====
     const events = await Event.find(query)
       .sort({ startDate: -1 })
       .populate("managers", "userName avatar")
       .populate("volunteers", "userName avatar")
       .populate("channel");
 
-
-    // ===== 4. Edge case =====
-    if (!events || events.length === 0) {
-      console.warn("⚠️ [getMyEvents] No events found for user");
-    }
-
-    // ===== 5. Response =====
     res.status(200).json(events);
-    console.log("✅ [getMyEvents] DONE");
   } catch (error) {
-    console.error("🔥 [getMyEvents] ERROR MESSAGE:", error.message);
-    console.error("🔥 [getMyEvents] ERROR STACK:", error.stack);
-
     res.status(500).json({
       message: "Server error",
-      debug: error.message, // 👈 chỉ để DEV, prod thì bỏ
     });
   }
 };
 
-
 // @desc    Get event by ID (Public nếu approved)
 // @route   GET /api/events/:id
 const getEventById = asyncHandler(async (req, res) => {
-  // 👇 Dùng trực tiếp eventId
   const event = await Event.findById(req.params.eventId)
     .populate("createdBy", "userName userEmail profilePicture phoneNumber")
     .select("-__v");
@@ -170,15 +148,12 @@ const createEvent = asyncHandler(async (req, res) => {
 const updateEvent = asyncHandler(async (req, res) => {
   const { eventId } = req.params;
 
-  // 1. Tìm sự kiện
   const event = await Event.findById(eventId);
   if (!event) {
     res.status(404);
     throw new Error("Không tìm thấy sự kiện");
   }
 
-  // 3. 🔒 CHECK TRẠNG THÁI (Logic chặn sửa)
-  // Nếu đang chờ hủy, đã hủy hoặc bị từ chối -> Không cho sửa
   if (
     ["cancelled", "rejected", "cancel_pending"].includes(event.status) &&
     !isAdmin
@@ -189,8 +164,6 @@ const updateEvent = asyncHandler(async (req, res) => {
     );
   }
 
-  // 4. 🔒 SANITIZE DATA (Lọc dữ liệu đầu vào)
-  // Chỉ lấy những trường cho phép, loại bỏ các trường nhạy cảm
   const allowedUpdates = [
     "title",
     "description",
@@ -210,9 +183,6 @@ const updateEvent = asyncHandler(async (req, res) => {
     }
   });
 
-  // 5. VALIDATION LOGIC (Kiểm tra logic nghiệp vụ)
-
-  // Kiểm tra: Số lượng tối đa không được nhỏ hơn số người đã đăng ký
   if (
     updates.maxParticipants &&
     updates.maxParticipants < event.registeredCount
@@ -223,32 +193,21 @@ const updateEvent = asyncHandler(async (req, res) => {
     );
   }
 
-  // 6. Thực hiện Update
   const updatedEvent = await Event.findByIdAndUpdate(eventId, updates, {
     new: true,
     runValidators: true,
   });
 
-  // 7. Gửi thông báo (Logic bạn đã có)
-  // Chỉ gửi khi sự kiện ĐANG HOẠT ĐỘNG và có thay đổi quan trọng (Time/Location)
   if (event.status === "approved") {
     try {
       const participants = await Registration.find({
         eventId: event._id,
         status: { $in: ["registered", "approved"] },
       }).populate("userId", "email userName");
-
-      if (participants.length > 0) {
-        console.log(
-          `📢 Gửi thông báo cập nhật cho ${participants.length} người.`
-        );
-        // Thực hiện gửi mail
-      }
     } catch (error) {
       console.error("Lỗi gửi thông báo:", error);
     }
   }
-
   res.json({ message: "Cập nhật thành công", data: updatedEvent });
 });
 
@@ -256,7 +215,6 @@ const updateEvent = asyncHandler(async (req, res) => {
 // @route   PATCH /api/events/:eventId/approve
 const approveEvent = asyncHandler(async (req, res) => {
   const { status, adminNote } = req.body;
-  // 👇 Dùng trực tiếp eventId
   const event = await Event.findById(req.params.eventId);
 
   if (!event) {
@@ -269,11 +227,9 @@ const approveEvent = asyncHandler(async (req, res) => {
     throw new Error("Trạng thái không hợp lệ");
   }
 
-  // 1. Cập nhật Event
   event.status = status;
   await event.save();
 
-  // 2. Cập nhật ApprovalRequest
   await ApprovalRequest.findOneAndUpdate(
     { event: event._id, status: "pending" },
     {
@@ -317,17 +273,11 @@ const cancelEvent = asyncHandler(async (req, res) => {
     throw new Error("Bạn không có quyền hủy sự kiện này.");
   }
 
-  // =========================================================
-  // TRƯỜNG HỢP 1: ADMIN HỦY TRỰC TIẾP (FORCE CANCEL)
-  // =========================================================
   if (isAdmin) {
-    // 1. Cập nhật trạng thái sự kiện
     event.status = "cancelled";
     event.cancellationReason = reason || "Admin hủy trực tiếp.";
     event.cancelledBy = req.user._id;
     await event.save();
-
-    // 2. Hủy toàn bộ vé
     await Registration.updateMany(
       {
         eventId: eventId,
@@ -336,7 +286,6 @@ const cancelEvent = asyncHandler(async (req, res) => {
       { status: "event_cancelled" }
     );
 
-    // 3. Nếu có yêu cầu hủy nào đang treo, duyệt nó luôn để đóng lại
     await ApprovalRequest.findOneAndUpdate(
       { event: eventId, type: "event_cancellation", status: "pending" },
       { status: "approved", adminNote: "Đã thực hiện hủy trực tiếp bởi Admin." }
@@ -365,11 +314,7 @@ const cancelEvent = asyncHandler(async (req, res) => {
     });
   }
 
-  // =========================================================
-  // TRƯỜNG HỢP 2: MANAGER GỬI YÊU CẦU HỦY (REQUEST CANCEL)
-  // =========================================================
   if (isOwner) {
-    // Kiểm tra xem đã có yêu cầu nào đang chờ chưa
     const existingRequest = await ApprovalRequest.findOne({
       event: eventId,
       type: "event_cancellation",
@@ -381,17 +326,14 @@ const cancelEvent = asyncHandler(async (req, res) => {
       throw new Error("Bạn đã gửi yêu cầu hủy cho sự kiện này rồi.");
     }
 
-    // 1. Tạo Approval Request mới
     await ApprovalRequest.create({
       type: "event_cancellation",
       event: eventId,
       requestedBy: req.user._id,
       reason: reason || "Manager yêu cầu hủy sự kiện.",
-      status: "pending", // Mặc định là pending
+      status: "pending",
     });
 
-    // 2. Chuyển trạng thái sự kiện sang 'cancel_pending'
-    // Lưu ý: Cần đảm bảo FE hiển thị đúng trạng thái này (hoặc coi nó như Approved nhưng bị khóa)
     event.status = "cancel_pending";
     await event.save();
 
@@ -412,7 +354,6 @@ const cancelEvent = asyncHandler(async (req, res) => {
 // @desc    Lấy danh sách đăng ký
 // @route   GET /api/events/:eventId/registrations
 const getEventRegistrations = asyncHandler(async (req, res) => {
-  // 👇 Dùng trực tiếp eventId
   const registrations = await Registration.find({ eventId: req.params.eventId })
     .populate("userId", "userName userEmail profilePicture phoneNumber")
     .sort({ createdAt: -1 });
@@ -452,7 +393,6 @@ const getAllEvents = asyncHandler(async (req, res) => {
 // @desc    Xóa sự kiện
 // @route   DELETE /api/events/:eventId
 const deleteEvent = asyncHandler(async (req, res) => {
-  // 👇 Dùng trực tiếp eventId
   const event = await Event.findById(req.params.eventId);
 
   if (!event) {

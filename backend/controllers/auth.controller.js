@@ -6,15 +6,16 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import Redis from "ioredis";
 import generateToken from "../utils/generateToken.js";
+import ApprovalRequest from "../models/approvalRequestModel.js";
 import {
   sendVerificationEmail,
   sendPasswordChangeEmail,
 } from "../utils/send-email.js";
 import admin from "firebase-admin";
+import { emitNotification } from "../utils/notificationHelper.js";
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.development.local" });
-import ApprovalRequest from "../models/approvalRequestModel.js";
 
 let redis;
 if (process.env.REDIS_URL) {
@@ -93,8 +94,17 @@ const verifyCode = async (req, res, next) => {
 // @route  POST /api/auth/register
 // @access Public
 const register = asyncHandler(async (req, res) => {
-  const { userName, verifyToken, password, role, biology, phoneNumber } =
-    req.body;
+  // 1. Lấy thêm adminRequest từ body (Frontend đã gửi qua formData)
+  const {
+    userName,
+    verifyToken,
+    password,
+    role,
+    biology,
+    phoneNumber,
+    adminRequest,
+  } = req.body;
+
   if (!userName || !password || !role) {
     res.status(400);
     throw new Error("Vui lòng điền đầy đủ tất cả các trường bắt buộc.");
@@ -105,7 +115,6 @@ const register = asyncHandler(async (req, res) => {
     throw new Error("Vui lòng xác minh email trước khi đăng ký.");
   }
 
-  // Giải mã token để lấy email
   let userEmail;
   try {
     const decoded = jwt.verify(verifyToken, process.env.JWT_SECRET);
@@ -115,14 +124,14 @@ const register = asyncHandler(async (req, res) => {
     throw new Error("Token không hợp lệ hoặc đã hết hạn.");
   }
 
-  // Kiểm tra email đã tồn tại chưa
+  // Kiểm tra email đã tồn tại
   const userExists = await User.findOne({ userEmail });
-
   if (userExists) {
     res.status(400);
     throw new Error("Địa chỉ email này đã được sử dụng.");
   }
 
+  // 2. Tạo User với role mặc định luôn là "volunteer" để chờ duyệt
   const user = await User.create({
     userName,
     userEmail,
@@ -144,18 +153,30 @@ const register = asyncHandler(async (req, res) => {
       approvalType = "admin_promotion";
     }
 
-    if (approvalType) {
-      await ApprovalRequest.create({
-        type: approvalType,
-        requestedBy: user._id,
-        status: "pending",
-        promotionData: {
-          eventsCompleted: 0,
-          averageRating: 0,
-          totalAttendanceHours: 0,
-        },
-      });
-    }
+    let approvalRequest = null;
+
+if (approvalType) {
+  approvalRequest = await ApprovalRequest.create({
+    type: approvalType,
+    requestedBy: user._id,
+    status: "pending",
+    promotionData: {
+      eventsCompleted: 0,
+      averageRating: 0,
+      totalAttendanceHours: 0,
+    },
+  });
+}
+
+if (approvalRequest) {
+  emitNotification(req, "admin", {
+    title: `Yêu cầu quyền ${role === "admin" ? "Admin" : "Manager"}`,
+    message: `Người dùng ${userName} yêu cầu quyền ${role} khi đăng ký.`,
+    type: role === "admin" ? "danger" : "info",
+    link: `/admin/dashboard?tab=managers&highlight=${approvalRequest._id}`,
+  });
+}
+
   }
 
 
@@ -165,13 +186,9 @@ const register = asyncHandler(async (req, res) => {
       userName: user.userName,
       userEmail: user.userEmail,
       role: user.role,
-      phoneNumber: user.phoneNumber,
-      biology: user.biology,
-      profilePicture: user.profilePicture,
       token: generateToken(user._id),
+      // thông tin khác
     };
-
-    console.log("Login information:", payload);
 
     res.status(201).json(payload);
   } else {
@@ -275,9 +292,9 @@ const firebaseLogin = asyncHandler(async (req, res) => {
     token: generateToken(user._id),
   };
 
-  console.log("Login information:", payload);  
+  console.log("Login information:", payload);
 
-  res.status(201).json(payload);  
+  res.status(201).json(payload);
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -306,11 +323,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await sendPasswordChangeEmail(email, code);
 
   // Tạo token chứa email
-  const resetToken = jwt.sign(
-    { email },
-    process.env.JWT_SECRET,
-    { expiresIn: "10m" }
-  );
+  const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+    expiresIn: "10m",
+  });
 
   return res.json({
     message: "Mã xác nhận đã được gửi",
@@ -374,17 +389,14 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
-
 export {
   saveCode,
   checkCode,
   sendVerificationCode,
   verifyCode,
   register,
-  // loginUser,
   login,
   firebaseLogin,
-
   forgotPassword,
   resetPassword,
 };

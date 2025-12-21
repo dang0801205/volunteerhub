@@ -48,6 +48,10 @@ const RegistrationCard = ({
     color: "gray",
   };
 
+  console.log("Event in Card:", event);
+  const isEventFull =
+    (event?.currentParticipants ?? 0) >= (event?.maxParticipants ?? 0);
+
   const handleAccept = async () => {
     setIsProcessing(true);
     await onAccept(registration);
@@ -181,10 +185,14 @@ const RegistrationCard = ({
             <div className='flex gap-3 mt-2'>
               <button
                 onClick={handleAccept}
-                disabled={isProcessing}
-                className='flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50'>
+                disabled={isProcessing || isEventFull}
+                className={`flex-1 sm:flex-none px-4 py-2 text-white rounded-lg font-medium transition ... ${
+                  isEventFull
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700"
+                }`}>
                 <CheckCircle className='w-4 h-4' />
-                Chấp nhận
+                {isEventFull ? "Sự kiện đã đầy" : "Chấp nhận"}
               </button>
               <button
                 onClick={handleReject}
@@ -211,6 +219,7 @@ const RegistrationManagementTable = ({
   loading = false,
   highlightedId, // 6. Nhận ID cần highlight từ Parent
 }) => {
+  console.log("Mới nè ===============", events);
   const [filterStatus, setFilterStatus] = useState("pending");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -224,13 +233,14 @@ const RegistrationManagementTable = ({
   ); // Phụ thuộc vào danh sách users
 
   const findEvent = useCallback(
-    (eventId) => {
-      if (!eventId) return {};
-      const id = eventId._id || eventId;
-      return eventId.title ? eventId : events.find((e) => e._id === id) || {};
-    },
-    [events]
-  );
+  (eventOrId) => {
+    if (!eventOrId) return null;
+    const id = eventOrId._id || eventOrId;
+    return events.find((e) => e._id === id) || null;
+  },
+  [events]
+);
+
 
   // const filteredRegistrations = useMemo(() => {
   //   // Ưu tiên đưa thẻ được highlight lên đầu danh sách (Tùy chọn, ở đây mình giữ nguyên thứ tự)

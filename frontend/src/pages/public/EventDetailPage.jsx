@@ -21,9 +21,11 @@ import {
 import { useGeolocation } from "../../hooks/useGeolocation";
 
 // Import components
+import ConfirmModal from "../../components/common/ConfirmModal";
 import VolunteersList from "../../components/registrations/VolunteersList";
 import EventSingleMap from "../public/EventMap";
 import Toast, { ToastContainer } from "../../components/common/Toast";
+import UserDetailModal from "../../components/users/UserDetailModal";
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -37,6 +39,9 @@ const EventDetail = () => {
   const [event, setEvent] = useState(null);
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [viewingUser, setViewingUser] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false });
   const [error, setError] = useState(null);
   const [toasts, setToasts] = useState([]);
 
@@ -49,6 +54,8 @@ const EventDetail = () => {
   }, [event]);
 
   const isExpired = timeStatus === "EXPIRED";
+  const isFull =
+    (event.currentParticipants ?? 0) >= (event.maxParticipants ?? 0);
 
   const addToast = (message, type = "success") => {
     const id = Date.now();
@@ -57,6 +64,9 @@ const EventDetail = () => {
   const removeToast = (id) =>
     setToasts((prev) => prev.filter((t) => t.id !== id));
 
+  const handleViewUser = (userId) => {
+    setViewingUser({ _id: userId });
+  };
   // 1. Lấy vị trí người dùng
   const { location: userLocation } = useGeolocation();
 
@@ -232,6 +242,9 @@ const EventDetail = () => {
                 users={[]}
                 compact={false}
                 canView={true}
+                onUserClick={handleViewUser} // Truyền hàm xử lý
+                userRole={profile?.role} // Truyền quyền của người đang xem
+                addToast={addToast}
               />
             </div>
           </div>
@@ -303,7 +316,7 @@ const EventDetail = () => {
             {!isManagerOrAdmin && (
               <div
                 className={`${
-                  event.status === "cancelled" || isExpired
+                  event.status === "cancelled" || isExpired || isFull
                     ? "bg-gray-500 shadow-gray-200" // Chuyển màu xám nếu hủy HOẶC hết hạn
                     : "bg-emerald-600 shadow-emerald-200"
                 } rounded-2xl p-6 text-white text-center shadow-lg transition-all duration-300`}>
@@ -323,8 +336,23 @@ const EventDetail = () => {
                       Sự kiện đã kết thúc
                     </button>
                   </>
+                ) : isFull ? (
+                  /* Trường hợp sự kiện đầy chỗ */
+                  <>
+                    <h4 className='text-xl font-bold mb-2'>
+                      Sự kiện đã đầy chỗ
+                    </h4>
+                    <p className='text-gray-100 text-sm mb-6'>
+                      Cảm ơn bạn, nhưng sự kiện đã đạt số lượng tối đa.
+                    </p>
+                    <button
+                      disabled
+                      className='w-full py-3 bg-gray-300 text-gray-500 font-bold rounded-xl cursor-not-allowed'>
+                      Hết chỗ
+                    </button>
+                  </>
                 ) : event.status === "cancelled" ? (
-                  /* TRƯỜNG HỢP 2: SỰ KIỆN BỊ HỦY */
+                  /* SỰ KIỆN BỊ HỦY */
                   <>
                     <h4 className='text-xl font-bold mb-2'>
                       Sự kiện đã ngừng tiếp nhận
@@ -381,6 +409,18 @@ const EventDetail = () => {
           </div>
         </div>
       </div>
+      {viewingUser && (
+        <UserDetailModal
+          viewingUser={viewingUser}
+          onClose={() => setViewingUser(null)}
+          addToast={addToast}
+          setConfirmModal={setConfirmModal}
+        />
+      )}
+      <ConfirmModal
+        {...confirmModal}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );

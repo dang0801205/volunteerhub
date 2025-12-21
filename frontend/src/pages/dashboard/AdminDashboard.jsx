@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useState, useEffect, useMemo } from "react";
-//import { useSearchParams } from "react-router-dom";
+import NotificationBell from "../../components/common/NotificationBell";
 import { useDeepLink } from "../../hooks/useDeepLink";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -121,10 +121,16 @@ const AdminDashboard = ({ user }) => {
     error: approvalError,
   } = useSelector((state) => state.approval);
 
+  console.log("Pending Requests:", pendingRequests);
+
   // Filter Requests
-  const pendingManagerRequests = pendingRequests.filter(
-    (req) => req.type === "manager_promotion"
-  );
+const pendingManagerRequests = pendingRequests.filter(
+  (req) => req.type === "manager_promotion"
+);
+
+const pendingAdminRequests = pendingRequests.filter(
+  (req) => req.type === "admin_promotion"
+);
   const pendingCancelRequests = pendingRequests.filter(
     (req) => req.type === "event_cancellation"
   );
@@ -573,12 +579,6 @@ const AdminDashboard = ({ user }) => {
     });
   };
 
-  // const totalPending =
-  //   pendingNewEvents.length +
-  //   pendingRegistrations.length +
-  //   pendingManagerRequests.length +
-  //   pendingCancelRequests.length;
-
   return (
     <div className='min-h-screen bg-gray-50 font-sans'>
       {/* Header */}
@@ -668,10 +668,17 @@ const AdminDashboard = ({ user }) => {
               <StatCard
                 title='Yêu cầu Manager'
                 value={pendingManagerRequests.length}
-                change={2}
                 icon={Briefcase}
                 color='bg-purple-500'
               />
+
+              <StatCard
+                title='Yêu cầu Admin'
+                value={pendingAdminRequests.length}
+                icon={Bell}
+                color='bg-red-500'
+              />
+
             </div>
           )}
 
@@ -701,6 +708,12 @@ const AdminDashboard = ({ user }) => {
                     label: "Duyệt Manager",
                     count: pendingManagerRequests.length,
                     color: "purple",
+                  },
+                                    {
+                    id: "admins",
+                    label: "Duyệt Admin",
+                    count: pendingAdminRequests.length,
+                    color: "red",
                   },
                   {
                     id: "suggestions",
@@ -827,6 +840,7 @@ const AdminDashboard = ({ user }) => {
                 />
               )}
 
+              {/* === TAB DUYỆT MANAGER === */}
               {activeTab === "managers" && (
                 <div className='space-y-4'>
                   {pendingManagerRequests.length === 0 ? (
@@ -835,47 +849,75 @@ const AdminDashboard = ({ user }) => {
                     </div>
                   ) : (
                     pendingManagerRequests.map((req) => {
-                      // 1. Kiểm tra trạng thái highlight dựa trên ID từ URL
                       const isHighlighted = req._id === highlightId;
+                      // 1. Phân loại: Nếu eventsCompleted = 0 hoặc không có promotionData là đăng ký mới
+                      const isNewRegistration =
+                        !req.promotionData ||
+                        (req.promotionData.eventsCompleted || 0) === 0;
+                      const isRequestedAdmin = req.reason
+                        ?.toLowerCase()
+                        .includes("admin");
 
                       return (
                         <div
                           key={req._id}
-                          // 2. Gán ID để logic scrollIntoView có thể tìm thấy hàng này
                           id={`manager-req-${req._id}`}
-                          // 3. Thêm các class CSS để hiển thị viền tím và nền nổi bật khi được highlight
-                          className={`bg-white rounded-xl border p-5 flex items-center justify-between transition-all duration-500 ${
+                          className={`rounded-xl border p-5 flex items-center justify-between transition-all duration-500 ${
                             isHighlighted
-                              ? "ring-2 ring-purple-500 bg-purple-50/50 shadow-md z-10 relative"
-                              : "hover:shadow-md border-gray-200"
+                              ? "ring-2 ring-purple-500 shadow-md z-10 relative"
+                              : "hover:shadow-md"
+                          } ${
+                            // 2. THAY ĐỔI MÀU NỀN THEO LOẠI ĐĂNG KÝ
+                            isNewRegistration
+                              ? isHighlighted
+                                ? "bg-blue-100/60 border-blue-300"
+                                : "bg-blue-50/40 border-blue-200"
+                              : isHighlighted
+                              ? "bg-purple-50/50 border-purple-200"
+                              : "bg-white border-gray-200"
                           }`}>
                           <div className='flex items-center gap-4'>
-                            {/* Avatar với viền thay đổi khi highlight */}
-                            <div
-                              className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${
-                                isHighlighted
-                                  ? "border-purple-500"
-                                  : "border-transparent"
-                              }`}>
-                              {req.requestedBy?.profilePicture ? (
-                                <img
-                                  src={req.requestedBy.profilePicture}
-                                  alt=''
-                                  className='w-full h-full object-cover'
-                                />
-                              ) : (
-                                <div
-                                  className={`w-full h-full flex items-center justify-center font-bold transition-colors ${
-                                    isHighlighted
-                                      ? "bg-purple-600 text-white"
-                                      : "bg-purple-100 text-purple-700"
+                            {/* Avatar với Badge "New" */}
+                            <div className='relative'>
+                              <div
+                                className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${
+                                  isHighlighted
+                                    ? "border-purple-500"
+                                    : "border-transparent"
+                                }`}>
+                                {req.requestedBy?.profilePicture ? (
+                                  <img
+                                    src={req.requestedBy.profilePicture}
+                                    alt=''
+                                    className='w-full h-full object-cover'
+                                  />
+                                ) : (
+                                  <div
+                                    className={`w-full h-full flex items-center justify-center font-bold ${
+                                      isHighlighted
+                                        ? "bg-purple-600 text-white"
+                                        : "bg-purple-100 text-purple-700"
+                                    }`}>
+                                    {req.requestedBy?.userName?.[0] || "U"}
+                                  </div>
+                                )}
+                              </div>
+                              {/* 3. HIỂN THỊ BADGE NEW CHO TÀI KHOẢN MỚI */}
+                              {isNewRegistration && (
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                    isRequestedAdmin
+                                      ? "bg-red-100 text-red-700 border border-red-200"
+                                      : "bg-blue-100 text-blue-700 border border-blue-200"
                                   }`}>
-                                  {req.requestedBy?.userName?.[0] || "U"}
-                                </div>
+                                  {isRequestedAdmin
+                                    ? "Yêu cầu ADMIN"
+                                    : "Yêu cầu MANAGER"}
+                                </span>
                               )}
                             </div>
+
                             <div>
-                              {/* Tên người dùng chuyển màu tím đậm khi highlight */}
                               <p
                                 className={`font-bold transition-colors ${
                                   isHighlighted
@@ -885,21 +927,42 @@ const AdminDashboard = ({ user }) => {
                                 {req.requestedBy?.userName ||
                                   "Người dùng không xác định"}
                               </p>
-                              <p className='text-sm text-gray-500'>
-                                Hoàn thành:{" "}
-                                <span className='font-semibold text-gray-700'>
-                                  {req.promotionData?.eventsCompleted || 0}
-                                </span>{" "}
-                                sự kiện •{" "}
-                                <span className='font-semibold text-gray-700'>
-                                  {req.promotionData?.totalAttendanceHours || 0}
-                                </span>{" "}
-                                giờ
-                              </p>
+
+                              <div className='text-xs flex flex-col gap-0.5 mt-0.5'>
+                                {req.requestedBy?.phoneNumber && (
+                                  <p className='text-gray-500 font-medium'>
+                                    SĐT:{" "}
+                                    <span className='text-gray-700'>
+                                      {req.requestedBy.phoneNumber}
+                                    </span>
+                                  </p>
+                                )}
+
+                                {isNewRegistration ? (
+                                  <p className='text-blue-600 font-bold italic flex items-center gap-1'>
+                                    <span className='w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse'></span>
+                                    Đăng ký tài khoản Manager/Admin
+                                  </p>
+                                ) : (
+                                  <p className='text-gray-500'>
+                                    Hoàn thành:{" "}
+                                    <span className='font-semibold text-gray-700'>
+                                      {req.promotionData.eventsCompleted}
+                                    </span>{" "}
+                                    sự kiện •
+                                    <span className='font-semibold text-gray-700'>
+                                      {" "}
+                                      {req.promotionData.totalAttendanceHours?.toFixed(
+                                        1
+                                      ) || 0}
+                                    </span>{" "}
+                                    giờ
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
 
-                          {/* Nút bấm chuyển sang màu đặc khi highlight */}
                           <button
                             onClick={() => setSelectedManagerRequest(req)}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${
@@ -915,6 +978,75 @@ const AdminDashboard = ({ user }) => {
                   )}
                 </div>
               )}
+
+              {/* === TAB DUYỆT ADMIN === */}
+{activeTab === "admins" && (
+  <div className="space-y-4">
+    {pendingAdminRequests.length === 0 ? (
+      <div className="text-center py-12 text-gray-500">
+        Không có yêu cầu Admin nào đang chờ duyệt.
+      </div>
+    ) : (
+      pendingAdminRequests.map((req) => {
+        const isHighlighted = req._id === highlightId;
+
+        return (
+          <div
+            key={req._id}
+            id={`admin-req-${req._id}`}
+            className={`rounded-xl border p-5 flex items-center justify-between transition-all
+              ${isHighlighted
+                ? "ring-2 ring-red-500 bg-red-50 border-red-300 shadow-md"
+                : "bg-white border-gray-200 hover:shadow-md"}
+            `}
+          >
+            <div className="flex items-center gap-4">
+              {/* Avatar */}
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-red-500">
+                {req.requestedBy?.profilePicture ? (
+                  <img
+                    src={req.requestedBy.profilePicture}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-red-100 text-red-700 font-bold">
+                    {req.requestedBy?.userName?.[0] || "U"}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="font-bold text-gray-900 flex items-center gap-2">
+                  {req.requestedBy?.userName}
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-200">
+                    YÊU CẦU ADMIN
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-600">
+                  Email: {req.requestedBy?.userEmail}
+                </p>
+
+                <p className="text-xs text-red-600 font-semibold mt-1">
+                  ⚠ Quyền cao nhất – cần xem xét kỹ
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedManagerRequest(req)}
+              className="px-4 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition"
+            >
+              Xem & Quyết định
+            </button>
+          </div>
+        );
+      })
+    )}
+  </div>
+)}
+
 
               {activeTab === "users_management" && (
                 <UserManagementTable

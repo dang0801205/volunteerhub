@@ -11,7 +11,7 @@ export const fetchEvents = createAsyncThunk(
   async (
     {
       page = 1,
-      limit = 12,
+      limit = 1000,
       search = "",
       tag = "",
       status = "approved",
@@ -212,7 +212,7 @@ const eventSlice = createSlice({
     myEvents: [],    // event user tham gia
     pagination: {
       page: 1,
-      limit: 12,
+      limit: 1000,
       total: 0,
       pages: 0,
     },

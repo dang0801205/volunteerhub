@@ -30,20 +30,23 @@ import Information from "./pages/Information.jsx";
 import VolunteerHistory from "./pages/dashboard/VolunteerHistory.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
 import EventDetail from "./pages/public/EventDetailPage.jsx";
-
+import { connectSocket, disconnectSocket } from "./clientSocket.js";
 /**
  * Main App Component
  * Handles global routing, authentication state, and layout
  */
 export default function App() {
   const dispatch = useDispatch();
-  const { profile: user, profileLoading: loadingUser } = useSelector(
-    (state) => state.user
-  );
+
+  const {
+    profile: user,
+    profileLoading: loadingUser,
+    profileChecked,
+  } = useSelector((state) => state.user);
 
   useEffect(() => {
-  console.log("🟢 USER PROFILE:", user);
-}, [user]);
+    console.log("🟢 USER PROFILE:", user);
+  }, [user]);
 
   // Local state
   const [authModal, setAuthModal] = useState(null); // "login" | "register" | null
@@ -71,6 +74,13 @@ export default function App() {
     setAuthModal(null);
   };
 
+  useEffect(() => {
+    if (user && profileChecked) {
+      connectSocket(user);
+    }
+    return () => disconnectSocket();
+  }, [user, profileChecked]);
+
   /**
    * Handle user logout
    * Clears token and redirects to home
@@ -88,8 +98,10 @@ export default function App() {
     setAuthModal(null);
   };
 
-  if (loadingUser) {
-    return (
+  // ✅ Gate: có token mà chưa check xong => đợi, đừng cho ProtectedRoute redirect bậy lúc refresh
+  const token = localStorage.getItem("token");
+  if ((token && !profileChecked) || loadingUser) {
+return (
       <div className='min-h-screen w-full flex items-center justify-center bg-gray-100'>
         Đang tải...
       </div>
@@ -183,7 +195,7 @@ export default function App() {
                 element={<Media user={user} openAuth={setAuthModal} />}
               />
             </Route>
-            <Route path='*' element={<Navigate to='/' />} />
+<Route path='*' element={<Navigate to='/' />} />
           </Routes>
         </main>
 

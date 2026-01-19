@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Heart, Users, Calendar, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { t } from "../../utils/i18n";
 import Card from "../../components/common/Card.jsx";
 import heroImage from "../../assets/hd1.png";
 import Hero from "../../components/home/Hero.jsx";
@@ -63,7 +64,7 @@ export default function Home({ user, openAuth }) {
         return (
           <motion.section
             key={title}
-            className='bg-surface-white py-12 sm:py-16'
+            className='bg-surface-white dark:bg-gray-900 py-12 sm:py-16'
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
@@ -85,14 +86,14 @@ export default function Home({ user, openAuth }) {
                 {/* Nội dung - Rộng hơn */}
                 <div className='w-full lg:w-[55%] px-4 sm:px-8'>
                   <div className='flex items-center gap-3 mb-6'>
-                    <div className='p-4 rounded-full bg-primary-100 text-primary-600'>
+                    <div className='p-4 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'>
                       <FeatureIcon className='h-7 w-7' />
                     </div>
                   </div>
-                  <h2 className='text-3xl font-bold text-text-main mb-6'>
+                  <h2 className='text-3xl font-bold text-text-main dark:text-white mb-6'>
                     {title}
                   </h2>
-                  <p className='text-base text-text-secondary leading-relaxed'>
+                  <p className='text-base text-text-secondary dark:text-gray-300 leading-relaxed'>
                     {description}
                   </p>
                 </div>

@@ -18,9 +18,9 @@ export default function PieStat({
         </h4>
       </div>
 
-      <div className='flex-1 min-h-[200px]' style={{ width: "100%", height }}>
+      <div className='flex-1 min-h-[200px]' style={{ width: "100%", height, minHeight: height }}>
         {data.length > 0 ? (
-          <ResponsiveContainer width='100%' height='100%'>
+          <ResponsiveContainer width='100%' height='100%' minHeight={height}>
             <PieChart>
               <Pie
                 data={data}

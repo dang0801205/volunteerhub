@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useDeepLink } from "../../hooks/useDeepLink";
+import { t } from "../../utils/i18n";
 import RegistrationManagementTable from "../../components/registrations/RegistrationManagementTable";
 import {
   Calendar,
@@ -44,6 +45,7 @@ import UserDetailModal from "../../components/users/UserDetailModal";
 import EventManagementTable from "../../components/events/EventManagementTable";
 import UserManagementTable from "../../components/users/UserManagementTable";
 import PieStat from "../../components/users/PieStat";
+import Leaderboard from "../../components/common/Leaderboard";
 
 // Common
 import { ToastContainer } from "../../components/common/Toast";
@@ -148,6 +150,13 @@ export default function ManagerDashboard({ user }) {
     { name: "Đã hủy", value: stats.cancelled, color: "#6b7280" },
     { name: "Chờ hủy", value: stats.cancelPending, color: "#f97316" },
   ].filter((d) => d.value > 0);
+
+  const userRoleData = useMemo(() => {
+    const volunteerCount = allUsers.filter((u) => u.role === "volunteer").length;
+    return [
+      { name: "Tình nguyện viên", value: volunteerCount, color: "#3b82f6" },
+    ].filter((d) => d.value > 0);
+  }, [allUsers]);
 
   const { highlightId, clearParams } = useDeepLink({
     setActiveTab,
@@ -320,31 +329,31 @@ export default function ManagerDashboard({ user }) {
     setViewingUserId(userOrId?._id || userOrId);
 
   return (
-    <div className='min-h-screen bg-gray-50/50 p-6 font-sans'>
+    <div className='min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 font-sans transition-colors'>
       <div className='max-w-7xl mx-auto space-y-6'>
         {/* WELCOME SECTION */}
         <div className='flex flex-col gap-1 mb-2'>
-          <h1 className='text-3xl font-extrabold text-gray-900 tracking-tight'>
-            Manager Dashboard
+          <h1 className='text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight'>
+            Manager {t('dashboard')}
           </h1>
-          <p className='text-gray-500'>
-            Xin chào,{" "}
+          <p className='text-gray-500 dark:text-gray-400'>
+            {t('welcome')},{" "}
             <span className='font-semibold text-primary-600'>
               {displayName}
             </span>
           </p>
         </div>
 
-        <div className='bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[600px]'>
+        <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-h-[600px] transition-colors'>
           {/* TABS NAVIGATION */}
-          <div className='border-b border-gray-200 px-6 pt-4'>
+          <div className='border-b border-gray-200 dark:border-gray-700 px-6 pt-4'>
             <div className='flex gap-8 overflow-x-auto no-scrollbar'>
               <button
                 onClick={() => handleTabChange("overview")}
                 className={`pb-4 text-sm font-bold relative flex items-center gap-2 whitespace-nowrap ${
                   activeTab === "overview"
-                    ? "text-primary-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-primary-600 dark:text-primary-400"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}>
                 <BarChart3 className='w-4 h-4' /> Tổng quan
                 {activeTab === "overview" && (
@@ -372,10 +381,10 @@ export default function ManagerDashboard({ user }) {
                 onClick={() => handleTabChange("registrations")}
                 className={`pb-4 text-sm font-bold relative flex items-center gap-2 whitespace-nowrap ${
                   activeTab === "registrations"
-                    ? "text-primary-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-primary-600 dark:text-primary-400"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}>
-                <Users className='w-4 h-4' /> Duyệt đăng ký
+                <Users className='w-4 h-4' /> {t('registrations')}
                 {pendingRegCount > 0 && (
                   <span className='ml-1 px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold'>
                     {pendingRegCount}
@@ -388,56 +397,57 @@ export default function ManagerDashboard({ user }) {
             </div>
           </div>
 
-          <div className='flex-1 p-6 flex flex-col'>
+          <div className='flex-1 p-6 flex flex-col overflow-auto'>
             {/* OVERVIEW */}
             {activeTab === "overview" && (
-              <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300'>
-                <div className='lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                  <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between'>
+              <div className='space-y-6 animate-in fade-in duration-300'>
+                {/* Stats Cards */}
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                  <div className='bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between'>
                     <div>
-                      <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>
-                        Đang chạy
+                      <p className='text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider'>
+                        {t('approved')}
                       </p>
-                      <h3 className='text-2xl font-black text-emerald-600 mt-1'>
+                      <h3 className='text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1'>
                         {stats.approved}
                       </h3>
                     </div>
-                    <div className='p-3 bg-emerald-50 text-emerald-600 rounded-xl'>
+                    <div className='p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl'>
                       <CheckCircle className='w-6 h-6' />
                     </div>
                   </div>
-                  <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between'>
+                  <div className='bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between'>
                     <div>
-                      <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>
-                        Chờ duyệt
+                      <p className='text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider'>
+                        {t('pending')}
                       </p>
-                      <h3 className='text-2xl font-black text-amber-500 mt-1'>
+                      <h3 className='text-2xl font-black text-amber-500 dark:text-amber-400 mt-1'>
                         {stats.pending}
                       </h3>
                     </div>
-                    <div className='p-3 bg-amber-50 text-amber-600 rounded-xl'>
+                    <div className='p-3 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl'>
                       <Clock className='w-6 h-6' />
                     </div>
                   </div>
-                  <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between'>
+                  <div className='bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between'>
                     <div>
-                      <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>
-                        Tổng TNV
+                      <p className='text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider'>
+                        {t('users')}
                       </p>
-                      <h3 className='text-2xl font-black text-blue-600 mt-1'>
+                      <h3 className='text-2xl font-black text-blue-600 dark:text-blue-400 mt-1'>
                         {stats.totalParticipants}
                       </h3>
                     </div>
-                    <div className='p-3 bg-blue-50 text-blue-600 rounded-xl'>
+                    <div className='p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl'>
                       <Users className='w-6 h-6' />
                     </div>
                   </div>
-                  <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between'>
+                  <div className='bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between'>
                     <div>
-                      <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>
-                        Đã hủy / Chờ hủy
+                      <p className='text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider'>
+                        {t('cancelled')}
                       </p>
-                      <h3 className='text-2xl font-black text-red-500 mt-1'>
+                      <h3 className='text-2xl font-black text-red-500 dark:text-red-400 mt-1'>
                         {stats.rejected + stats.cancelled + stats.cancelPending}
                       </h3>
                     </div>
@@ -446,18 +456,37 @@ export default function ManagerDashboard({ user }) {
                     </div>
                   </div>
                 </div>
-                <div className='lg:col-span-1'>
-                  {myEvents.length > 0 ? (
-                    <PieStat
-                      title='Trạng thái sự kiện'
-                      data={pieData}
-                      height={280}
-                    />
-                  ) : (
-                    <div className='bg-gray-50 border-2 border-dashed border-gray-200 p-6 rounded-2xl h-full flex items-center justify-center text-gray-400'>
-                      Chưa có dữ liệu
+
+                {/* Charts & Leaderboard Row */}
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+                  {/* Charts Column */}
+                  <div className='space-y-6'>
+                    {myEvents.length > 0 && (
+                      <PieStat
+                        title='Trạng thái sự kiện'
+                        data={pieData}
+                        height={250}
+                      />
+                    )}
+                    {userRoleData.length > 0 && (
+                      <PieStat
+                        title='Phân bổ vai trò'
+                        data={userRoleData}
+                        height={250}
+                      />
+                    )}
+                  </div>
+
+                  {/* Leaderboard Column - Fixed Height */}
+                  <div className='lg:sticky lg:top-6 h-fit'>
+                    <div className='max-h-[600px] overflow-hidden'>
+                      <Leaderboard 
+                        volunteers={allUsers}
+                        currentUserId={activeUser?._id}
+                        onUserClick={handleViewUser}
+                      />
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
@@ -550,6 +579,7 @@ export default function ManagerDashboard({ user }) {
         <EventDetailModal
           event={selectedEvent}
           registrations={currentRegistrations}
+          users={allUsers}
           onClose={() => {
             setSelectedEvent(null);
             clearParams(activeTab);
@@ -564,6 +594,8 @@ export default function ManagerDashboard({ user }) {
           onRejectRegistration={handleRejectRegistration}
           showApprovalActions={false}
           showRegistrationsList={true}
+          userRole={activeUser?.role}
+          addToast={addToast}
         />
       )}
 

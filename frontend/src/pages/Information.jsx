@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer } from "../components/common/Toast";
+import { t } from "../utils/i18n";
 import {
   Eye,
   EyeOff,
@@ -239,7 +240,7 @@ export default function Information({ onProfileUpdate }) {
     user.role === "admin" ? "Quản trị viên" : "Tình nguyện viên";
 
   return (
-    <div className='mx-auto w-full max-w-5xl space-y-10 px-4 pb-16'>
+    <div className='mx-auto w-full max-w-5xl space-y-10 px-4 pb-16 dark:bg-gray-900 transition-colors'>
       <section className='relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary-600 via-primary-600 to-secondary-600 text-white shadow-xl'>
         <div
           className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(var(--warning-400),0.3),_transparent_55%)]'
@@ -279,22 +280,22 @@ export default function Information({ onProfileUpdate }) {
             </div>
 
             <div className='flex flex-col gap-2 text-sm items-start'>
-              <span className='inline-flex items-center rounded-full bg-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white'>
+              <span className='inline-flex items-center rounded-full bg-white/25 dark:bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white'>
                 {roleLabel}
               </span>
-              <h1 className='text-3xl font-extrabold md:text-4xl'>
+              <h1 className='text-3xl font-extrabold md:text-4xl text-white'>
                 {displayName}
               </h1>
               <div className='flex flex-col gap-4 text-sm'>
-                <span className='inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-white'>
+                <span className='inline-flex items-center gap-2 rounded-full bg-white/20 dark:bg-white/10 px-3 py-1 text-white'>
                   <Mail className='h-4 w-4' />
                   Email: {email}
                 </span>
                 {/* FIX: Hiển thị SĐT */}
 
-                <span className='inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-white'>
+                <span className='inline-flex items-center gap-2 rounded-full bg-white/20 dark:bg-white/10 px-3 py-1 text-white'>
                   <Phone className='h-4 w-4' />
-                  SĐT: {phone}
+                  {t('profile')}: {phone}
                 </span>
               </div>
               <p className='text-sm leading-relaxed text-white/90'>

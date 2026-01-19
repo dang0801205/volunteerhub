@@ -21,8 +21,8 @@ const EventReviews = ({ eventId }) => {
 
   const { profile: user } = useSelector((state) => state.user);
 
-  const myAttendance = currentChannel.attendances.find(
-    (a) => a.regId.userId === user._id
+  const myAttendance = currentChannel?.attendances?.find(
+    (a) => a.regId.userId === user?._id
   );
 
   const stats = useMemo(() => {

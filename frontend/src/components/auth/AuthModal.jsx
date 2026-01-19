@@ -444,7 +444,7 @@ export default function AuthModal({ mode, onClose, onSuccess }) {
                       </div>
                     </div>
 
-                    {mode === "register" && step === 2 && (
+                    {activeMode === "register" && step === 2 && (
                       <div className='space-y-3 sm:space-y-4 pt-1 sm:pt-2'>
                         <div>
                           <label className='block text-sm font-medium text-text-main mb-1.5 sm:mb-2'>

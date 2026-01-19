@@ -5,6 +5,7 @@ import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 import Registration from "../models/registrationModel.js";
 import generateToken from "../utils/generateToken.js";
+import { sendPasswordChangeEmail } from "../utils/send-email.js";
 
 // @desc   Update user profile
 // @route  PUT /api/users/profile
@@ -44,13 +45,17 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route  GET/api/users
 // @access Private/Admin,Manager
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({}).select("-password");
+  // Manager chỉ được xem danh sách volunteer
+  const filter =
+    req.user.role === "manager" ? { role: "volunteer" } : {};
+  
+  const users = await User.find(filter).select("-password");
   res.status(200).json(users);
 });
 
 // @desc   Delete user
 // @route  DELETE/api/users
-// @access Private/Admin
+// @access Private/Admin,Manager
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
@@ -63,6 +68,12 @@ const deleteUser = asyncHandler(async (req, res) => {
     throw new Error("Cannot delete admin user");
   }
 
+  // Manager chỉ được xóa volunteer
+  if (req.user.role === "manager" && user.role !== "volunteer") {
+    res.status(403);
+    throw new Error("Bạn chỉ được phép xóa tài khoản tình nguyện viên");
+  }
+
   await user.deleteOne();
   res.status(200).json({ message: "User removed" });
 });
@@ -72,19 +83,25 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @access Private/Admin,Manager
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
-  if (user) {
-    const history = await Registration.find({ userId: req.params.id })
-      .populate("eventId", "title startDate endDate location status image")
-      .sort({ createdAt: -1 });
-
-    res.json({
-      ...user.toObject(),
-      history: history,
-    });
-  } else {
+  if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
+
+  // Manager chỉ được xem thông tin volunteer
+  if (req.user.role === "manager" && user.role !== "volunteer") {
+    res.status(403);
+    throw new Error("Bạn chỉ được phép xem thông tin tình nguyện viên");
+  }
+
+  const history = await Registration.find({ userId: req.params.id })
+    .populate("eventId", "title startDate endDate location status image")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    ...user.toObject(),
+    history: history,
+  });
 });
 
 // @desc   Update user role, Admin only
@@ -223,6 +240,22 @@ const updateUserStatus = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc   Get suggested managers
+// @route  GET /api/users/suggested-managers
+// @access Private/Admin
+const getSuggestedManagers = asyncHandler(async (req, res) => {
+  // TODO: Implement logic to fetch suggested managers
+  res.status(200).json([]);
+});
+
+// @desc   Request manager role
+// @route  POST /api/users/request-manager
+// @access Private
+const requestManagerRole = asyncHandler(async (req, res) => {
+  // TODO: Implement logic for manager role request
+  res.status(200).json({ message: "Request received" });
+});
+
 export {
   updateUserProfile,
   getAllUsers,
@@ -232,4 +265,6 @@ export {
   changeUserPassword,
   getUserProfile,
   updateUserStatus,
+  getSuggestedManagers,
+  requestManagerRole,
 };

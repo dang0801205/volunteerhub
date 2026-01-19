@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { t } from "../../utils/i18n";
 import {
   Heart,
   Users,

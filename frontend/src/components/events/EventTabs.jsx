@@ -1,6 +1,7 @@
 /** @format */
 
 import React from "react";
+import { t } from "../../utils/i18n";
 import {
   MessageSquare,
   Info,
@@ -10,54 +11,56 @@ import {
   QrCodeIcon,
 } from "lucide-react";
 
-const TABS_CONFIG = [
+const getTabsConfig = () => [
   {
     id: "discussion",
-    label: "Thảo luận",
+    label: t('discussion'),
     icon: MessageSquare,
     badge: null,
   },
   {
     id: "reviews",
-    label: "Đánh giá",
+    label: t('reviews'),
     icon: Star,
     badge: null,
   },
   {
     id: "about",
-    label: "Giới thiệu",
+    label: t('about'),
     icon: Info,
     badge: null,
   },
   {
     id: "members",
-    label: "Thành viên",
+    label: t('members'),
     icon: Users,
     badge: null,
   },
   {
     id: "attendance",
-    label: "Điểm danh",
+    label: t('attendance'),
     icon: Users,
     badge: null,
   },
   {
     id: "media",
-    label: "Ảnh & File",
+    label: t('media'),
     icon: ImageIcon,
     badge: null,
   },
   {
     id: "qr",
-    label: "Mã QR",
+    label: t('qrCode'),
     icon: QrCodeIcon,
     badge: null,
   },
 ];
 
 const EventTabs = ({ activeTab, setActiveTab, badgeCounts = {} }) => {
+  const TABS_CONFIG = getTabsConfig();
+  
   return (
-    <div className='bg-gray-50 border-b border-gray-200'>
+    <div className='bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <nav className='flex items-center gap-1 py-2 overflow-x-auto no-scrollbar'>
           {TABS_CONFIG.map((tab) => {
@@ -72,8 +75,8 @@ const EventTabs = ({ activeTab, setActiveTab, badgeCounts = {} }) => {
                 className={`flex items-center gap-2.5 px-5 py-3 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative
                   ${
                     isActive
-                      ? "bg-white text-primary-600 shadow-sm border border-gray-200"
-                      : "text-gray-600 hover:bg-white/80 hover:text-gray-900"
+                      ? "bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-200 dark:border-gray-600"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-gray-700/80 hover:text-gray-900 dark:hover:text-gray-200"
                   }`}>
                 <Icon
                   className={`w-4.5 h-4.5 ${

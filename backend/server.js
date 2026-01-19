@@ -18,6 +18,7 @@ import eventRoutes from "./routes/event.routes.js";
 import registrationRoutes from "./routes/registration.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import approvalRequestRoutes from "./routes/approvalRequest.routes.js";
+import recommendationRoutes from "./routes/recommendation.routes.js";
 
 import connectDB from "./config/mongodb.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
@@ -59,6 +60,7 @@ app.use("/api/push", pushRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/attendances", attendanceRoutes);
 app.use("/api/approval-requests", approvalRequestRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 app.use(errorMiddleware);
 

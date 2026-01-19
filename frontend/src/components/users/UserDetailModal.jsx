@@ -15,6 +15,7 @@ import {
   History,
   UserCheck,
   Briefcase,
+  Award,
 } from "lucide-react";
 
 import {
@@ -24,6 +25,8 @@ import {
   updateUserStatus,
   deleteUser,
 } from "../../features/userSlice";
+import BadgeDisplay from "../common/BadgeDisplay";
+import { calculateEarnedBadges } from "../../utils/badges";
 
 const UserDetailModal = ({
   viewingUser,
@@ -54,6 +57,10 @@ const UserDetailModal = ({
       return {
         hours: pData.totalAttendanceHours || 0,
         events: pData.eventsCompleted || 0,
+        interactions: pData.interactions || 0,
+        reactionsReceived: pData.reactionsReceived || 0,
+        attendanceRate: pData.attendanceRate || 100,
+        earlyCheckins: pData.earlyCheckins || 0,
       };
     }
 
@@ -70,8 +77,23 @@ const UserDetailModal = ({
     return {
       hours: Math.round((totalMs / (1000 * 60 * 60)) * 10) / 10,
       events: completed.length,
+      interactions: 0,
+      reactionsReceived: 0,
+      attendanceRate: completed.length > 0 ? 100 : 0,
+      earlyCheckins: 0,
     };
   }, [displayUser]);
+
+  const earnedBadges = useMemo(() => {
+    return calculateEarnedBadges({
+      eventsCompleted: stats.events,
+      totalHours: stats.hours,
+      interactions: stats.interactions || 0,
+      reactionsReceived: stats.reactionsReceived || 0,
+      attendanceRate: stats.attendanceRate || 100,
+      earlyCheckins: stats.earlyCheckins || 0,
+    });
+  }, [stats]);
 
   const isAdmin = profile?.role === "admin";
   const isLoading = selectedUserLoading;
@@ -275,6 +297,18 @@ const UserDetailModal = ({
             Thông tin cá nhân
           </button>
           <button
+            onClick={() => setActiveTab("badges")}
+            className={`py-4 px-2 text-sm font-medium border-b-2 transition ml-6 ${
+              activeTab === "badges"
+                ? "border-emerald-600 text-emerald-700"
+                : "border-transparent text-gray-500"
+            }`}>
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4" />
+              Huy hiệu ({earnedBadges.length})
+            </div>
+          </button>
+          <button
             onClick={() => setActiveTab("history")}
             className={`py-4 px-2 text-sm font-medium border-b-2 transition ml-6 ${
               activeTab === "history"
@@ -379,6 +413,45 @@ const UserDetailModal = ({
                           </button>
                         )}
                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === "badges" && (
+                <div className='animate-in slide-in-from-right-4 duration-300 space-y-6'>
+                  <div className='text-center py-8'>
+                    <Award className='w-16 h-16 text-emerald-600 mx-auto mb-4' />
+                    <h3 className='text-2xl font-bold text-gray-900 mb-2'>
+                      Bộ sưu tập huy hiệu
+                    </h3>
+                    <p className='text-gray-500'>
+                      {earnedBadges.length > 0
+                        ? `Đã mở khóa ${earnedBadges.length} huy hiệu`
+                        : "Chưa có huy hiệu nào"}
+                    </p>
+                  </div>
+
+                  {earnedBadges.length > 0 ? (
+                    <div className='grid grid-cols-2 sm:grid-cols-3 gap-4'>
+                      {earnedBadges.map((badge) => (
+                        <div
+                          key={badge.id}
+                          className={`${badge.color} p-6 rounded-2xl text-center hover:scale-105 transition-transform cursor-pointer shadow-sm`}>
+                          <div className='text-5xl mb-3'>{badge.icon}</div>
+                          <h4 className='font-bold text-sm mb-1'>
+                            {badge.name}
+                          </h4>
+                          <p className='text-xs opacity-80'>
+                            {badge.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className='text-center py-12 bg-gray-50 rounded-xl'>
+                      <p className='text-gray-500'>
+                        Tham gia nhiều sự kiện để mở khóa huy hiệu!
+                      </p>
                     </div>
                   )}
                 </div>

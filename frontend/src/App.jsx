@@ -22,10 +22,13 @@ import Events from "./pages/public/EventPublic.jsx";
 import About from "./pages/public/AboutUs.jsx";
 import Media from "./pages/Media.jsx";
 import Information from "./pages/Information.jsx";
+import Settings from "./pages/Settings.jsx";
 import VolunteerHistory from "./pages/dashboard/VolunteerHistory.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
 import EventDetail from "./pages/public/EventDetailPage.jsx";
 import { connectSocket, disconnectSocket } from "./clientSocket.js";
+import { initDarkMode } from "./utils/darkMode.js";
+import { watchForDarkMode } from "./utils/darkModeHelper.js";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -42,6 +45,13 @@ export default function App() {
 
   // Local state
   const [authModal, setAuthModal] = useState(null); // "login" | "register" | null
+
+  // Initialize dark mode on app start
+  useEffect(() => {
+    initDarkMode();
+    const cleanup = watchForDarkMode();
+    return cleanup;
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -78,15 +88,15 @@ export default function App() {
   const token = localStorage.getItem("token");
   if ((token && !profileChecked) || loadingUser) {
     return (
-      <div className='min-h-screen w-full flex items-center justify-center bg-gray-100'>
+      <div className='min-h-screen w-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 dark:text-white transition-colors'>
         Đang tải...
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen w-full bg-gradient-to-b from-[#A8D0E6]/20 via-white to-[#F0F0F0] transition-colors'>
-      <div className='min-h-screen w-full bg-[#F0F0F0]/30 transition-colors'>
+    <div className='min-h-screen w-full bg-gradient-to-b from-[#A8D0E6]/20 via-white to-[#F0F0F0] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors'>
+      <div className='min-h-screen w-full bg-[#F0F0F0]/30 dark:bg-gray-900/30 transition-colors'>
         <Header
           setAuthModal={setAuthModal}
           user={user}
@@ -162,6 +172,7 @@ export default function App() {
               element={<ProtectedRoute user={user} loading={loadingUser} />}>
               <Route path='/dashboard' element={<Dashboard user={user} />} />
               <Route path='/information' element={<Information />} />
+              <Route path='/settings' element={<Settings />} />
               <Route
                 path='/history'
                 element={<VolunteerHistory user={user} />}

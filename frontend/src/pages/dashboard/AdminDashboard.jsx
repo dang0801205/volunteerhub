@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import NotificationBell from "../../components/common/NotificationBell";
 import { useDeepLink } from "../../hooks/useDeepLink";
 import { useDispatch, useSelector } from "react-redux";
+import { t } from "../../utils/i18n";
 import {
   Calendar,
   Users,
@@ -71,22 +72,22 @@ import UserManagementTable from "../../components/users/UserManagementTable";
 const StatCard = ({ title, value, change, icon, color }) => {
   const Icon = icon;
   return (
-    <div className='card p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow'>
+    <div className='card p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow'>
       <div className='flex justify-between items-start mb-4'>
         <div className={`p-3 rounded-xl ${color}`}>
           <Icon className='w-6 h-6 text-white' />
         </div>
         <span
           className={`flex items-center text-sm font-medium ${
-            change >= 0 ? "text-emerald-600" : "text-red-600"
+            change >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
           }`}>
           {change > 0 && "+"}
           {change}%
           <ArrowUpRight className='w-4 h-4 ml-1' />
         </span>
       </div>
-      <h3 className='text-gray-500 text-sm font-medium mb-1'>{title}</h3>
-      <p className='text-3xl font-bold text-gray-900'>{value}</p>
+      <h3 className='text-gray-500 dark:text-gray-400 text-sm font-medium mb-1'>{title}</h3>
+      <p className='text-3xl font-bold text-gray-900 dark:text-white'>{value}</p>
     </div>
   );
 };
@@ -570,58 +571,58 @@ const AdminDashboard = ({ user }) => {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 font-sans'>
+    <div className='min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors'>
       {/* Header */}
-      <div className='sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm'>
-        <h1 className='text-2xl font-bold text-gray-800'>Admin Dashboard</h1>
+      <div className='sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm'>
+        <h1 className='text-2xl font-bold text-gray-800 dark:text-white'>Admin {t('dashboard')}</h1>
         <div className='flex items-center gap-4'>
           {/* Export */}
           <div className='relative'>
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition'>
+              className='flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition'>
               <Download className='w-4 h-4' />
-              Xuất dữ liệu
+              {t('exportData')}
             </button>
             {showExportMenu && (
-              <div className='absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50'>
-                <div className='px-4 py-2 text-xs font-semibold text-gray-400 uppercase'>
-                  Sự kiện
+              <div className='absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50'>
+                <div className='px-4 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase'>
+                  {t('events')}
                 </div>
                 <button
                   onClick={() => handleExport("events", "csv")}
-                  className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'>
-                  <FileSpreadsheet className='w-4 h-4 text-emerald-600' /> CSV
+                  className='w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2'>
+                  <FileSpreadsheet className='w-4 h-4 text-emerald-600 dark:text-emerald-400' /> CSV
                 </button>
                 <button
                   onClick={() => handleExport("events", "json")}
-                  className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'>
-                  <FileJson className='w-4 h-4 text-amber-600' /> JSON
+                  className='w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2'>
+                  <FileJson className='w-4 h-4 text-amber-600 dark:text-amber-400' /> JSON
                 </button>
-                <div className='border-t my-1'></div>
-                <div className='px-4 py-2 text-xs font-semibold text-gray-400 uppercase'>
-                  Tình nguyện viên
+                <div className='border-t dark:border-gray-700 my-1'></div>
+                <div className='px-4 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase'>
+                  {t('users')}
                 </div>
                 <button
                   onClick={() => handleExport("volunteers", "csv")}
-                  className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'>
-                  <FileSpreadsheet className='w-4 h-4 text-emerald-600' /> CSV
+                  className='w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2'>
+                  <FileSpreadsheet className='w-4 h-4 text-emerald-600 dark:text-emerald-400' /> CSV
                 </button>
                 <button
                   onClick={() => handleExport("volunteers", "json")}
-                  className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2'>
-                  <FileJson className='w-4 h-4 text-amber-600' /> JSON
+                  className='w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2'>
+                  <FileJson className='w-4 h-4 text-amber-600 dark:text-amber-400' /> JSON
                 </button>
               </div>
             )}
           </div>
 
-          <div className='flex items-center gap-3 pl-4 border-l'>
+          <div className='flex items-center gap-3 pl-4 border-l dark:border-gray-700'>
             <div className='text-right hidden sm:block'>
-              <p className='font-bold'>{user?.userName || "Admin"}</p>
-              <p className='text-xs text-gray-500'>Administrator</p>
+              <p className='font-bold text-gray-900 dark:text-white'>{user?.userName || "Admin"}</p>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>Administrator</p>
             </div>
-            <div className='w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold'>
+            <div className='w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold'>
               A
             </div>
           </div>
@@ -1115,6 +1116,8 @@ const AdminDashboard = ({ user }) => {
           clearParams(activeTab);
         }}
         onUserClick={handleViewEvent}
+        userRole={user?.role}
+        addToast={addToast}
       />
 
       <ConfirmModal

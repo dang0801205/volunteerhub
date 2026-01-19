@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import Toast, { ToastContainer } from "../../components/common/Toast";
+import { t } from "../../utils/i18n";
 import {
   Calendar,
   MapPin,
@@ -27,12 +28,13 @@ import {
 } from "../../features/registrationSlice";
 import { extractAllTags } from "../../utils/tagHelpers";
 import TagBubbleModal from "./TagBubbleModal";
+import RecommendedEvents from "../../components/events/RecommendedEvents";
 import { getEventTimeStatus } from "../../utils/eventHelpers";
 const TIME_FILTERS = [
-  { label: "Tất cả", value: "all" },
-  { label: "Đang diễn ra", value: "ongoing" },
-  { label: "Sắp diễn ra", value: "upcoming" },
-  { label: "Đã diễn ra", value: "past" },
+  { label: t('all'), value: "all" },
+  { label: t('ongoing'), value: "ongoing" },
+  { label: t('upcoming'), value: "upcoming" },
+  { label: t('completed'), value: "past" },
 ];
 
 export default function EventsPage({ user, openAuth }) {
@@ -255,13 +257,13 @@ export default function EventsPage({ user, openAuth }) {
     }
   };
   return (
-    <div className='w-full min-h-screen bg-surface-muted px-6 py-10'>
+    <div className='w-full min-h-screen bg-surface-muted dark:bg-gray-950 px-6 py-10'>
       <div className='max-w-7xl mx-auto space-y-8'>
         <header className='flex items-center justify-between flex-wrap gap-4'>
           <div>
-            <h1 className='heading-1'>Sự kiện tình nguyện</h1>
-            <p className='text-body mt-1'>
-              Tham gia các hoạt động ý nghĩa trong cộng đồng
+            <h1 className='heading-1 dark:text-white'>{t('eventsTitle')}</h1>
+            <p className='text-body dark:text-gray-300 mt-1'>
+              {t('eventsSubtitle')}
             </p>
           </div>
           {isAdmin && (
@@ -271,33 +273,35 @@ export default function EventsPage({ user, openAuth }) {
           )}
         </header>
 
-        {/* Filters - Đã khôi phục đầy đủ để dùng setStatusFilter */}
-        <section className='card p-5'>
+        {user && <RecommendedEvents user={user} />}
+
+        {/* Filters */}
+        <section className='card dark:bg-gray-800 dark:border-gray-700 p-5'>
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
             <div className='flex flex-col gap-3'>
               <div className='relative w-full'>
-                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted' />
+                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted dark:text-gray-400' />
                 <input
                   type='text'
-                  placeholder='Tìm kiếm...'
+                  placeholder={t('searchEvents')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className='w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700'
+                  className='w-full pl-11 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-primary-400 transition-all text-gray-700 dark:text-gray-200'
                 />
               </div>
               <button
                 onClick={() => setIsTagModalOpen(true)}
                 className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border ${
                   selectedTag !== "all"
-                    ? "bg-primary-50 border-primary-200 text-primary-700"
-                    : "bg-white border-gray-200 text-text-secondary"
+                    ? "bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-400"
+                    : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-text-secondary dark:text-gray-300"
                 }`}>
                 <div className='flex items-center gap-2'>
                   <Filter className='w-4 h-4' />
                   <span>
                     {selectedTag === "all"
-                      ? "Lọc theo chủ đề"
-                      : `Chủ đề: ${selectedTag}`}
+                      ? t('filter')
+                      : `${selectedTag}`}
                   </span>
                 </div>
               </button>
@@ -391,7 +395,7 @@ export default function EventsPage({ user, openAuth }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className='card flex flex-col overflow-hidden hover:shadow-lg transition-shadow'>
+                className='card dark:bg-gray-800 dark:border-gray-700 flex flex-col overflow-hidden hover:shadow-lg transition-shadow'>
                 <div className='relative h-48'>
                   <img
                     src={event.image}
@@ -401,25 +405,25 @@ export default function EventsPage({ user, openAuth }) {
                   <div
                     className={`absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-semibold ${
                       isExpired
-                        ? "bg-gray-100 text-gray-600 border border-gray-200"
+                        ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600"
                         : event.status === "approved"
                         ? "badge-success"
                         : "badge-warning"
                     }`}>
                     {isExpired
-                      ? "Đã kết thúc"
-                      : EVENT_STATUS[event.status]?.label || "Công khai"}
+                      ? t('completed')
+                      : EVENT_STATUS[event.status]?.label || t('approved')}
                   </div>
                 </div>
 
                 <div className='flex flex-col flex-1 p-5 space-y-3'>
-                  <h3 className='text-lg font-semibold text-text-main line-clamp-2'>
+                  <h3 className='text-lg font-semibold text-text-main dark:text-white line-clamp-2'>
                     {event.title}
                   </h3>
-                  <div className='flex items-center gap-2 text-sm text-text-secondary'>
-                    <Users className='h-4 w-4 text-text-muted' />
+                  <div className='flex items-center gap-2 text-sm text-text-secondary dark:text-gray-300'>
+                    <Users className='h-4 w-4 text-text-muted dark:text-gray-400' />
                     <span>
-                      {event.currentParticipants}/{event.maxParticipants} người
+                      {event.currentParticipants}/{event.maxParticipants} {t('participants')}
                     </span>
                   </div>
 
@@ -477,8 +481,8 @@ export default function EventsPage({ user, openAuth }) {
                     )}
                     <button
                       onClick={() => navigate(`/events/${eventId}`)}
-                      className='rounded-lg border px-3 py-2 text-sm font-semibold text-text-secondary hover:bg-gray-50 flex items-center gap-1 shrink-0'>
-                      <Eye className='h-4 w-4' /> Chi tiết
+                      className='rounded-lg border dark:border-gray-600 px-3 py-2 text-sm font-semibold text-text-secondary dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1 shrink-0'>
+                      <Eye className='h-4 w-4' /> {t('viewDetails')}
                     </button>
                   </div>
                 </div>

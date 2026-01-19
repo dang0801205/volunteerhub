@@ -26,6 +26,7 @@ import VolunteersList from "../../components/registrations/VolunteersList";
 import EventSingleMap from "../public/EventMap";
 import Toast, { ToastContainer } from "../../components/common/Toast";
 import UserDetailModal from "../../components/users/UserDetailModal";
+import SimilarEvents from "../../components/events/SimilarEvents";
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -112,7 +113,7 @@ const EventDetail = () => {
   // Lọc danh sách đã được duyệt
   const isExpired = timeStatus === "EXPIRED";
   const isFull =
-    (event.currentParticipants ?? 0) >= (event.maxParticipants ?? 0);
+    (event?.currentParticipants ?? 0) >= (event?.maxParticipants ?? 0);
   const approvedVolunteers = registrations;
 
   // --- RENDER HELPERS ---
@@ -411,6 +412,8 @@ const EventDetail = () => {
             )}
           </div>
         </div>
+        
+        {event && <SimilarEvents eventId={id} />}
       </div>
       {viewingUser && (
         <UserDetailModal

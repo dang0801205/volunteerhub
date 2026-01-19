@@ -13,7 +13,9 @@ import {
   XCircle,
   Star,
   Edit,
+  Download,
 } from "lucide-react";
+import { exportToGoogleCalendar, exportToICal } from "../../utils/exportHelpers";
 import VolunteersList from "../registrations/VolunteersList";
 const LocationPicker = ({ lat, lng }) => (
   <div className='h-40 bg-gray-200 rounded-lg flex items-center justify-center text-sm text-gray-500'>
@@ -206,7 +208,7 @@ const EventDetailModal = ({
               <div className='bg-white rounded-xl p-5 shadow-sm border border-gray-200 space-y-5'>
                 <div className='flex items-start gap-3'>
                   <Calendar className='w-5 h-5 text-emerald-600 mt-0.5' />
-                  <div>
+                  <div className='flex-1'>
                     <p className='font-semibold text-gray-700'>Thời gian</p>
                     <p className='text-gray-900'>
                       {new Date(event.startDate).toLocaleDateString("vi-VN")}
@@ -223,6 +225,20 @@ const EventDetailModal = ({
                           { hour: "2-digit", minute: "2-digit" }
                         )}`}
                     </p>
+                    <div className='flex gap-2 mt-3'>
+                      <button
+                        onClick={() => exportToGoogleCalendar(event)}
+                        className='flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition'>
+                        <Download className='w-3.5 h-3.5' />
+                        Google Calendar
+                      </button>
+                      <button
+                        onClick={() => exportToICal(event)}
+                        className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-xs font-medium transition'>
+                        <Download className='w-3.5 h-3.5' />
+                        iCal
+                      </button>
+                    </div>
                   </div>
                 </div>
 

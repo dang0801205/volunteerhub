@@ -1,20 +1,18 @@
-FROM node:18-alpine AS build
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Copy cả package.json và package-lock.json để cố định phiên bản thư viện
 COPY package*.json ./
+
+# Cài đặt các gói phụ thuộc bên trong môi trường ảo
 RUN npm install
 
-# Copy source
+# Copy toàn bộ mã nguồn frontend vào container
 COPY . .
 
-# Build production assets
-RUN npm run build
+# Mở cổng 5173 (Cổng mặc định của hệ thống Vite)
+EXPOSE 5173
 
-FROM nginx:stable-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# ĐẶC BIỆT QUAN TRỌNG: Cờ --host giúp Vite lắng nghe kết nối từ bên ngoài container
+CMD ["npm", "run", "dev", "--", "--host"]

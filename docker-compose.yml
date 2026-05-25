@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: volunteer_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend/.env.development.local
+    depends_on:
+      - mongodb
+    networks:
+      - volunteer_net
+
+  frontend: # <-- Chữ 'frontend' phải thụt vào 2 dấu cách so với mép trái, ngang hàng với chữ 'backend'
+    build:
+      context: ./frontend
+    container_name: volunteer_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - volunteer_net
+
+  mongodb: # <-- Chữ 'mongodb' cũng phải ngang hàng với 'frontend' và 'backend'
+    image: mongo:latest
+    container_name: volunteer_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - volunteer_net
+
+networks:
+  volunteer_net:
+    driver: bridge
+
+volumes:
+  mongo_data:
